@@ -1,0 +1,21 @@
+CREATE TABLE `cdgh` (
+	`id` INT(11) NOT NULL AUTO_INCREMENT,
+	`url` VARCHAR(128) NOT NULL,
+	`html` TEXT NULL,
+	PRIMARY KEY (`id`)
+)
+COLLATE='utf8_general_ci'
+ENGINE=InnoDB
+AUTO_INCREMENT=0;
+
+CREATE TABLE `cdgh_extract` (
+	`id` INT(11) NOT NULL,
+	`url` VARCHAR(128) NOT NULL,
+	`title` VARCHAR(255) NULL DEFAULT NULL,
+	`publish_time` DATETIME NULL DEFAULT NULL,
+	PRIMARY KEY (`id`),
+	CONSTRAINT `FK_cdgh_extract_cdgh` FOREIGN KEY (`id`) REFERENCES `cdgh` (`id`)
+)
+COLLATE='utf8_general_ci'
+ENGINE=InnoDB
+ROW_FORMAT=COMPACT;
