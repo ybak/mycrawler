@@ -19,3 +19,19 @@ CREATE TABLE `cdgh_extract` (
 COLLATE='utf8_general_ci'
 ENGINE=InnoDB
 ROW_FORMAT=COMPACT;
+
+
+CREATE TABLE `chengdu12345` (
+	`id` int(11) NOT NULL AUTO_INCREMENT,
+	`url` varchar(128) NOT NULL,
+	`title` varchar(256) NOT NULL DEFAULT '',
+	`sender` varchar(50) DEFAULT NULL,
+	`accept_unit` varchar(50) DEFAULT NULL,
+	`status` varchar(50) DEFAULT NULL,
+	`category` varchar(50) DEFAULT NULL,
+	`views` int(11) DEFAULT NULL,
+	`create_date` datetime DEFAULT NULL,
+	`content` text,
+	`result` text,
+	PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
