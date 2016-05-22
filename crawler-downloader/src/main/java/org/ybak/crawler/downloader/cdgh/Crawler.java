@@ -1,8 +1,8 @@
-package org.ybak.cdgh;
+package org.ybak.crawler.downloader.cdgh;
 
 import com.github.davidmoten.rx.jdbc.Database;
-import org.ybak.util.DBUtil;
-import org.ybak.util.HtmlUtil;
+import org.ybak.crawler.downloader.util.HtmlUtil;
+import org.ybak.crawler.persistence.util.DBUtil;
 
 import java.io.IOException;
 import java.util.HashSet;
@@ -33,9 +33,9 @@ public class Crawler {
         for (int i = start; i < start + webpages; i++) {
             final int number = i;
             fixedThreadPool.execute(() -> {
-                try{
+                try {
                     craw(number, db);
-                }finally {
+                } finally {
                     tasks.countDown();
                 }
             });
@@ -48,7 +48,7 @@ public class Crawler {
     private static void craw(int number, Database db) {
         String url = urlPrefix + number + ".htm";
         boolean crawed = isURLCrawed(url, db);
-        if(crawed){
+        if (crawed) {
             System.out.println("结束抓取：" + number + ", 页面已经抓取过.");
             return;
         }
@@ -75,7 +75,6 @@ public class Crawler {
 //            }
         }
     }
-
 
 
     private static boolean isURLCrawed(String url, Database db) {

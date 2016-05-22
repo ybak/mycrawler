@@ -1,4 +1,4 @@
-package org.ybak.chengdu12345;
+package org.ybak.crawler.downloader.chengdu12345;
 
 import com.github.davidmoten.rx.jdbc.Database;
 import com.squareup.okhttp.OkHttpClient;
@@ -8,7 +8,7 @@ import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
-import org.ybak.util.DBUtil;
+import org.ybak.crawler.persistence.util.DBUtil;
 
 import java.io.IOException;
 import java.util.HashSet;
@@ -39,9 +39,9 @@ public class MailCrawler {
         for (int i = start; i <= 632; i++) {
             final int number = i;
             fixedThreadPool.execute(() -> {
-                try{
+                try {
                     craw(number, db);
-                }finally {
+                } finally {
                     tasks.countDown();
                 }
             });
@@ -55,27 +55,26 @@ public class MailCrawler {
         String pageUrl = urlPrefix + "moreMail?page=" + number;
         System.out.println("开始抓取：" + number);
         try {
-            String html =getURLBody(pageUrl);
+            String html = getURLBody(pageUrl);
             Document doc = Jsoup.parse(html);
             Elements elements = doc.select("div.left5 ul li.f12px");
             for (Element element : elements) {
-                String url = urlPrefix + element.select("a").attr("href");
+                String url = urlPrefix + element.select("css").attr("href");
 
                 boolean crawed = isURLCrawed(url, db);
-                if(crawed){
+                if (crawed) {
                     System.out.println("结束抓取：" + number + ", 页面已经抓取过.");
                     return;
                 }
 
                 Elements divs = element.select("div");
                 String title = divs.get(0).text();
-                String sender  = divs.get(1).text();
+                String sender = divs.get(1).text();
                 String receiveUnit = divs.get(2).text();
                 String status = divs.get(3).text();
                 String category = divs.get(4).text();
                 String views = divs.get(5).text();
-                String publishDate = "20"+divs.get(6).text()+" 00:00:00";
-
+                String publishDate = "20" + divs.get(6).text() + " 00:00:00";
 
 
                 int updates = db.update("insert into chengdu12345(url, title, sender, accept_unit, status, category, views, create_date) values (?,?,?,?,?,?,?,?)")
@@ -101,7 +100,7 @@ public class MailCrawler {
                 .url(url)
                 .build();
         Response response = client.newCall(request).execute();
-        if(!response.isSuccessful()){
+        if (!response.isSuccessful()) {
             response.body().close();
             throw new IllegalArgumentException(response.message());
         }

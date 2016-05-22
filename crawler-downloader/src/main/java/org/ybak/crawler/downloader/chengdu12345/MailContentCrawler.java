@@ -1,4 +1,4 @@
-package org.ybak.chengdu12345;
+package org.ybak.crawler.downloader.chengdu12345;
 
 import com.github.davidmoten.rx.jdbc.Database;
 import com.github.davidmoten.rx.jdbc.tuple.Tuple2;
@@ -6,8 +6,8 @@ import org.jsoup.Jsoup;
 import org.jsoup.helper.StringUtil;
 import org.jsoup.nodes.Document;
 import org.jsoup.select.Elements;
-import org.ybak.util.DBUtil;
-import org.ybak.util.HtmlUtil;
+import org.ybak.crawler.downloader.util.HtmlUtil;
+import org.ybak.crawler.persistence.util.DBUtil;
 
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
@@ -21,7 +21,7 @@ import java.util.concurrent.Executors;
  */
 public class MailContentCrawler {
 
-    static ThreadLocal<DateFormat> df = new ThreadLocal(){
+    static ThreadLocal<DateFormat> df = new ThreadLocal() {
         protected SimpleDateFormat initialValue() {
             return new SimpleDateFormat("yyyy-MM-dd HH:mm");
         }
@@ -52,12 +52,12 @@ public class MailContentCrawler {
                         String html = HtmlUtil.getURLBody(url);
                         Document doc = Jsoup.parse(html);
 
-//                        String content = getContent(doc);
+                        String content = getContent(doc);
                         String handleResult = getResult(doc);
 //                        Date publishTime = getPublishTime(doc);
 
-                        db.update("update chengdu12345 set result = ? where id = ?")
-                                .parameters(handleResult,  id).execute();
+                        db.update("update chengdu12345 set content = ?, result = ? where id = ?")
+                                .parameters(content, handleResult, id).execute();
                     } catch (Exception e) {
                         e.printStackTrace();
                     } finally {

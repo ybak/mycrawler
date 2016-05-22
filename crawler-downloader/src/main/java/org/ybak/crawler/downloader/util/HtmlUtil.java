@@ -1,4 +1,4 @@
-package org.ybak.util;
+package org.ybak.crawler.downloader.util;
 
 import com.squareup.okhttp.OkHttpClient;
 import com.squareup.okhttp.Request;
@@ -18,7 +18,7 @@ public class HtmlUtil {
                 .url(url)
                 .build();
         Response response = client.newCall(request).execute();
-        if(!response.isSuccessful()){
+        if (!response.isSuccessful()) {
             response.body().close();
             throw new IllegalArgumentException(response.message());
         }

@@ -1,10 +1,10 @@
-package org.ybak.cdgh;
+package org.ybak.crawler.downloader.cdgh;
 
 import com.github.davidmoten.rx.jdbc.Database;
 import com.github.davidmoten.rx.jdbc.tuple.Tuple3;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
-import org.ybak.util.DBUtil;
+import org.ybak.crawler.persistence.util.DBUtil;
 
 import java.text.DateFormat;
 import java.text.ParseException;
@@ -21,11 +21,11 @@ public class ContentProcessor {
     public static void main(String[] args) {
         Database db = DBUtil.getDB();
         Integer count = db.select("select count(1) from cdgh").getAs(Integer.class).toBlocking().single();
-        int pages = count / 50 + (count % 50 == 0 ? 0: 1);
-        System.out.println("待处理页数:" +pages);
+        int pages = count / 50 + (count % 50 == 0 ? 0 : 1);
+        System.out.println("待处理页数:" + pages);
 
         for (int i = 0; i < pages; i++) {
-            System.out.println("当前处理页数:" +i);
+            System.out.println("当前处理页数:" + i);
 
             Iterable<Tuple3<Integer, String, String>> results =
                     db.select("select id, url, html from cdgh limit ?,?").parameters(i * 50, 50).getAs(Integer.class, String.class, String.class).toBlocking().toIterable();
@@ -48,7 +48,7 @@ public class ContentProcessor {
         try {
             return df.parse(publishString);
         } catch (ParseException e) {
-            System.out.println("解析时间出错:"+publishString);
+            System.out.println("解析时间出错:" + publishString);
             return new Date();
         }
     }
@@ -56,8 +56,8 @@ public class ContentProcessor {
     private static String getTitle(Document doc) {
         String title = doc.title();
         String[] split = title.split("--");
-        if(split.length > 1){
-            return split[split.length-1];
+        if (split.length > 1) {
+            return split[split.length - 1];
         }
         return title;
     }

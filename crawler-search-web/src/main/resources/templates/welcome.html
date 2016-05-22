@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html xmlns:layout="http://www.w3.org/1999/xhtml">
+<head>
+    <title>Layout</title>
+    <link rel="stylesheet" href="http://cdn.bootcss.com/bootstrap/3.3.6/css/bootstrap.min.css"/>
+    <script src="http://libs.useso.com/js/jquery/2.1.1/jquery.min.js"></script>
+    <script src="http://cdn.bootcss.com/mustache.js/2.2.1/mustache.min.js"></script>
+</head>
+<body>
+<div class="container">
+    <div class="row wrapper border-bottom white-bg page-heading">
+        <div class="col-lg-10">
+            <h2>内容检索</h2>
+        </div>
+    </div>
+    <div class="wrapper wrapper-content animated fadeInRight">
+        <div class="row col-lg-6">
+            <h3 layout:fragment="header">请输入检索内容：</h3><input class="keyword"/><input class="submit" type="submit"/>
+        </div>
+    </div>
+    <div class="wrapper wrapper-content animated fadeInRight">
+        <div class="row">
+            <div class="col-lg-12">
+                <div class="ibox float-e-margins">
+                    <div class="ibox-title">
+                        <h3>邮件内容</h3>
+                    </div>
+                    <div class="ibox-content">
+                        <div class="list-group"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+    (function () {
+        $('input.submit').click(function () {
+            $.get('/search?keyword=' + $('input.keyword').val(), function (data) {
+                if (data.content) {
+                    var template = $('#template').html();
+                    Mustache.parse(template);
+                    var rendered = Mustache.render(template, data);
+                    $('div.list-group').html(rendered);
+                }
+            });
+        });
+    })();
+</script>
+<script id="template" type="x-tmpl-mustache">
+{{#content}}
+<a class="list-group-item">
+    <h3 class="list-group-item-heading">{{title}}</h3>
+    <p class="list-group-item-text">{{content}}</p>
+
+    <p class="list-group-item-text">{{result}}</p>
+</a>
+{{/content}}
+
+</script>
+<style>
+    .list-group-item-text {
+        margin: 0 0 10px;
+        color: inherit;
+        font-size: 12px;
+        line-height: inherit;
+    }
+</style>
+</body>
+</html>
