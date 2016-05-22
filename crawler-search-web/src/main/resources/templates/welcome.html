@@ -3,8 +3,9 @@
 <head>
     <title>Layout</title>
     <link rel="stylesheet" href="http://cdn.bootcss.com/bootstrap/3.3.6/css/bootstrap.min.css"/>
-    <script src="http://libs.useso.com/js/jquery/2.1.1/jquery.min.js"></script>
-    <script src="http://cdn.bootcss.com/mustache.js/2.2.1/mustache.min.js"></script>
+    <script src="//libs.useso.com/js/jquery/2.1.1/jquery.min.js"></script>
+    <script src="//cdn.bootcss.com/bootstrap/3.3.6/js/bootstrap.min.js"></script>
+    <script src="//cdn.bootcss.com/mustache.js/2.2.1/mustache.min.js"></script>
 </head>
 <body>
 <div class="container">
@@ -15,7 +16,9 @@
     </div>
     <div class="wrapper wrapper-content animated fadeInRight">
         <div class="row col-lg-6">
-            <h3 layout:fragment="header">请输入检索内容：</h3><input class="keyword"/><input class="submit" type="submit"/>
+            <form class="searchForm">
+                <h3 layout:fragment="header">请输入检索内容：</h3><input class="keyword"/><input class="submit" type="submit"/>
+            </form>
         </div>
     </div>
     <div class="wrapper wrapper-content animated fadeInRight">
@@ -33,10 +36,28 @@
         </div>
     </div>
 </div>
+<!-- Modal -->
+<div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title" id="myModalLabel">请求处理中...</h4>
+            </div>
+            <div class="modal-body">
+                <div class="progress">
+                    <div class="progress-bar progress-bar-striped active" role="progressbar" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100" style="width: 100%"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
 <script>
     (function () {
-        $('input.submit').click(function () {
+        $('form.searchForm').submit(function (event) {
+            $('#myModal').modal('show');
+            event.preventDefault();
             $.get('/search?keyword=' + $('input.keyword').val(), function (data) {
+                $('#myModal').modal('hide');
                 if (data.content) {
                     var template = $('#template').html();
                     Mustache.parse(template);
