@@ -8,6 +8,7 @@ import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
+import org.ybak.crawler.downloader.util.HtmlUtil;
 import org.ybak.crawler.persistence.util.DBUtil;
 
 import java.io.IOException;
@@ -24,7 +25,6 @@ public class MailCrawler {
 
     static String urlPrefix = "http://12345.chengdu.gov.cn/";
     static CountDownLatch tasks;
-    static OkHttpClient client = new OkHttpClient();
 
     static Set<Integer> failedNumbers = new HashSet<Integer>();
 
@@ -55,11 +55,11 @@ public class MailCrawler {
         String pageUrl = urlPrefix + "moreMail?page=" + number;
         System.out.println("开始抓取：" + number);
         try {
-            String html = getURLBody(pageUrl);
-            Document doc = Jsoup.parse(html);
-            Elements elements = doc.select("div.left5 ul li.f12px");
-            for (Element element : elements) {
-                String url = urlPrefix + element.select("css").attr("href");
+                String html = HtmlUtil.getURLBody(pageUrl);
+                Document doc = Jsoup.parse(html);
+                Elements elements = doc.select("div.left5 ul li.f12px");
+                for (Element element : elements) {
+                    String url = urlPrefix + element.select("css").attr("href");
 
                 boolean crawed = isURLCrawed(url, db);
                 if (crawed) {
@@ -93,18 +93,6 @@ public class MailCrawler {
             System.out.println("结束抓取：" + number + ", status=" + e.getMessage() + ", 剩余任务：" + (tasks.getCount() - 1));
         } finally {
         }
-    }
-
-    static String getURLBody(String url) throws IOException {
-        Request request = new Request.Builder()
-                .url(url)
-                .build();
-        Response response = client.newCall(request).execute();
-        if (!response.isSuccessful()) {
-            response.body().close();
-            throw new IllegalArgumentException(response.message());
-        }
-        return response.body().string();
     }
 
     private static boolean isURLCrawed(String url, Database db) {
