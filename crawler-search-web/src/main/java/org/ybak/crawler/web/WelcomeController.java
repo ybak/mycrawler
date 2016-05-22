@@ -30,7 +30,7 @@ public class WelcomeController {
 
     @RequestMapping("/search")
     @ResponseBody
-    public Page<Mail> insufficientStorage(String keyword) {
+    public Page<Mail> search(String keyword) {
         Pageable query = new PageRequest(0, 100);
         return mailService.search(keyword, query);
     }
