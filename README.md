@@ -181,7 +181,7 @@ public class WebApplication {
 -------------------
 
 ### 踩过的坑
-a
+
 1.  应用启动报错, 提示"Service not found."
 	 因为Spring Boot默认会扫描启动类所在包(org.ybak.crawler.web)下的Spring注解. 但我的Service类在另外一个包:org.ybak.crawler.persistence.service, 所以Spring启动时没有将service初始化. 解决的方法很简单. 参照上面的WebApplication代码中scanBasePackages设置, 制定扫描的包列表即可.
 2. 应用启动报错, 提示"Repository not found."
@@ -197,4 +197,4 @@ a
   
   通过使用Spring Boot来快速实现一个web应用, 确实感受到它的方便. 大量约定的默认配置能让代码简介不少, 但当需要自定义配置是, 面对spring-boot凌乱的文档, 有着实让人头大. 必须经常google才能解决不断冒出的问题.
   另一方面, 使用Spring Boot开发一个简单的Web应用,并不能展示Spring Boot作为微服务开发框架的威力. 后续我调整这个web应用的架构, 配以docker+ elasticsearch, 来实现这个应用的微服务化.
-  ![这里写图片描述](http://img.blog.csdn.net/20160523103600807)a
+  ![这里写图片描述](http://img.blog.csdn.net/20160523103600807)
