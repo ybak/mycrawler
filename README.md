@@ -182,16 +182,25 @@ public class WebApplication {
 
 ### 踩过的坑
 
-1.  应用启动报错, 提示"Service not found."
-	 因为Spring Boot默认会扫描启动类所在包(org.ybak.crawler.web)下的Spring注解. 但我的Service类在另外一个包:org.ybak.crawler.persistence.service, 所以Spring启动时没有将service初始化. 解决的方法很简单. 参照上面的WebApplication代码中scanBasePackages设置, 制定扫描的包列表即可.
-2. 应用启动报错, 提示"Repository not found."
+1.  **应用启动报错, 提示"Service not found."**
+
+   因为Spring Boot默认会扫描启动类所在包(org.ybak.crawler.web)下的Spring注解.但我的Service类在另外一个包:org.ybak.crawler.persistence.service, 所以Spring启动时没有将service初始化. 解决的方法很简单. 参照上面的WebApplication代码中scanBasePackages设置, 制定扫描的包列表即可.
+	 
+2. **应用启动报错, 提示"Repository not found."**
+    
     和之前的问题类似, 需要通过EnableJpaRepositories指定repo的扫描路径.
-3. 应用启动报错,提示"Entity not found."a
-   和之前的问题类似, 需要通过EntityScan指定Entity的扫描路径.
-4. 使用SpringBoot开发时, 页面模板文件修改后浏览器不生效, Java逻辑修改后不生效.
-    引入[spring-boot-devtools](https://docs.spring.io/spring-boot/docs/current/reference/html/using-boot-devtools.html), 该模块可在调试时设置各种禁止模板缓存的配置, 方便开发调试.
-5. 使用了SpringBootDevtools开发时, 任何文件修改都会导致SpringBoot重启. 影响开发效率.
-   devtools通过重启来加载新类,让新代码生效. 但没完没了的重启也会降低开发效率. 幸好spring提供了[spring-loaded](https://github.com/spring-projects/spring-loaded)工具, 可以理解为开源的针对spring的JRebel. 使用了它以后, 就可以享受无重启热部署了.
+    
+3. **应用启动报错,提示"Entity not found."**
+
+  和之前的问题类似, 需要通过EntityScan指定Entity的扫描路径.
+   
+4. **使用SpringBoot开发时, 页面模板文件修改后浏览器不生效, Java逻辑修改后不生效.**
+    
+    引入[spring-boot-devtools](https://docs.spring.io/spring-boot/docs/current/reference/html/using-boot-devtools.html),该模块可在调试时设置各种禁止模板缓存的配置, 方便开发调试.
+
+5. **使用了SpringBootDevtools开发时, 任何文件修改都会导致SpringBoot重启. 影响开发效率.**
+
+    devtools通过重启来加载新类,让新代码生效. 但没完没了的重启也会降低开发效率.幸好spring提供了[spring-loaded](https://github.com/spring-projects/spring-loaded)工具, 可以理解为开源的针对spring的JRebel. 使用了它以后, 就可以享受无重启热部署了.
 
 ##总结
   
