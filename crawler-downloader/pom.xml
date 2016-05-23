@@ -15,6 +15,10 @@
 
     <dependencies>
         <dependency>
+            <groupId>org.elasticsearch</groupId>
+            <artifactId>elasticsearch</artifactId>
+        </dependency>
+        <dependency>
             <groupId>org.ybak</groupId>
             <artifactId>crawler-persistence</artifactId>
             <version>${project.parent.version}</version>

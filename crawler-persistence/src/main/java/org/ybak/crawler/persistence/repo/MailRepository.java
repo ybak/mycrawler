@@ -9,4 +9,5 @@ public interface MailRepository extends Repository<Mail, Long> {
 
     Page<Mail> search(String keyword, Pageable pageable);
 
+    Page<Mail> findAll(Pageable page);
 }
