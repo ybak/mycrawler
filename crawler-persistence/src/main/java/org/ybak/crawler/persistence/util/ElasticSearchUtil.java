@@ -38,16 +38,17 @@ public class ElasticSearchUtil {
     public static void main(String[] args) throws Exception {
         int size = 20;
         String keyword = "红牌楼";
-        SearchHits result = searchByKeyword(size, keyword);
+        SearchHits result = searchByKeyword(keyword ,0, 20);
         System.out.println(result);
     }
 
-    public static SearchHits searchByKeyword(int size, String keyword) {
+    public static SearchHits searchByKeyword(String keyword, int from, int size) {
         SearchRequestBuilder request = client.prepareSearch("chengdu12345")
                 .setSearchType(SearchType.DFS_QUERY_THEN_FETCH)
-                .setQuery(QueryBuilders.multiMatchQuery(keyword, "title", "content", "result").type(MatchQueryBuilder.Type.PHRASE)) // Query
+                .setQuery(QueryBuilders.multiMatchQuery(keyword, "title", "content", "result")
+                .type(MatchQueryBuilder.Type.PHRASE)) // Query
                 .addSort("createDate", SortOrder.DESC)
-                .setFrom(0).setSize(size).setExplain(true);
+                .setFrom(from).setSize(size).setExplain(true);
 
         SearchResponse response = request.execute().actionGet();
         return response.getHits();
@@ -65,19 +66,19 @@ public class ElasticSearchUtil {
     private static void addMailIndexRequest(BulkRequestBuilder bulkRequest, Mail mail) {
         try {
             bulkRequest.add(client.prepareIndex("chengdu12345", "mail")
-                .setSource(XContentFactory.jsonBuilder()
-                    .startObject()
-                    .field("content", mail.content)
-                    .field("createDate", mail.createDate)
-                    .field("acceptUnit", mail.acceptUnit)
-                    .field("category", mail.category)
-                    .field("result", mail.result)
-                    .field("sender", mail.sender)
-                    .field("status", mail.status)
-                    .field("title", mail.title)
-                    .field("url", mail.url)
-                    .field("views", mail.views)
-                    .endObject())
+                            .setSource(XContentFactory.jsonBuilder()
+                                    .startObject()
+                                    .field("content", mail.content)
+                                    .field("createDate", mail.createDate)
+                                    .field("acceptUnit", mail.acceptUnit)
+                                    .field("category", mail.category)
+                                    .field("result", mail.result)
+                                    .field("sender", mail.sender)
+                                    .field("status", mail.status)
+                                    .field("title", mail.title)
+                                    .field("url", mail.url)
+                                    .field("views", mail.views)
+                                    .endObject())
             );
         } catch (IOException e) {
             throw new RuntimeException(e);

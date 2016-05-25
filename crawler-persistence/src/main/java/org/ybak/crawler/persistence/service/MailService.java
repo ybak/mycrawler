@@ -27,7 +27,7 @@ public class MailService {
     private MailRepository mailRepository;
 
     public PageImpl<Map<String, Object>> search(String keyword, Pageable pageable) {
-        SearchHits searchHits = ElasticSearchUtil.searchByKeyword(20, keyword);
+        SearchHits searchHits = ElasticSearchUtil.searchByKeyword(keyword, pageable.getOffset(), pageable.getPageSize());
         List<Map<String, Object>> result = new ArrayList<>();
 
         for (SearchHit hit : searchHits.getHits()) {
