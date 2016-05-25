@@ -9,6 +9,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 import org.ybak.crawler.persistence.repo.MailRepository;
+import org.ybak.crawler.persistence.util.ElasticSearchUtil;
 import org.ybak.crawler.persistence.vo.Mail;
 
 import javax.annotation.PostConstruct;

@@ -1,4 +1,4 @@
-package org.ybak.crawler.downloader.chengdu12345;
+package org.ybak.crawler.downloader.chengdu12345.db;
 
 import com.github.davidmoten.rx.jdbc.Database;
 import com.github.davidmoten.rx.jdbc.tuple.Tuple2;
@@ -6,6 +6,7 @@ import org.jsoup.Jsoup;
 import org.jsoup.helper.StringUtil;
 import org.jsoup.nodes.Document;
 import org.jsoup.select.Elements;
+import org.ybak.crawler.downloader.chengdu12345.HtmlParser;
 import org.ybak.crawler.downloader.util.HtmlUtil;
 import org.ybak.crawler.persistence.util.DBUtil;
 
@@ -21,11 +22,7 @@ import java.util.concurrent.Executors;
  */
 public class MailContentCrawler {
 
-    static ThreadLocal<DateFormat> df = new ThreadLocal() {
-        protected SimpleDateFormat initialValue() {
-            return new SimpleDateFormat("yyyy-MM-dd HH:mm");
-        }
-    };
+
     static ExecutorService fixedThreadPool = Executors.newFixedThreadPool(8);
 
 
@@ -52,8 +49,8 @@ public class MailContentCrawler {
                         String html = HtmlUtil.getURLBody(url);
                         Document doc = Jsoup.parse(html);
 
-                        String content = getContent(doc);
-                        String handleResult = getResult(doc);
+                        String content = HtmlParser.getContent(doc);
+                        String handleResult = HtmlParser.getResult(doc);
 //                        Date publishTime = getPublishTime(doc);
 
                         db.update("update chengdu12345 set content = ?, result = ? where id = ?")
@@ -72,27 +69,6 @@ public class MailContentCrawler {
         fixedThreadPool.shutdown();
     }
 
-    private static String getContent(Document doc) {
-        return doc.select(".rightside1 td.td2").get(1).text();
-    }
-
-    private static String getResult(Document doc) {
-        Elements element = doc.select(".rightside1 tbody tr:last-child");
-        return element.text();
-    }
-
-    private static Date getPublishTime(Document doc) {
-        String publishString = doc.select(".rightside1 td.td32").get(0).text();
-        if (StringUtil.isBlank(publishString)) {
-            publishString = doc.select(".rightside1 td.td32").get(1).text();
-        }
-        try {
-            return df.get().parse(publishString);
-        } catch (Exception e) {
-            System.out.println("解析时间出错:" + publishString);
-            return new Date();
-        }
-    }
 
 
 }

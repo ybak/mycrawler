@@ -1,4 +1,4 @@
-package org.ybak.crawler.downloader.chengdu12345;
+package org.ybak.crawler.downloader.chengdu12345.db;
 
 import com.github.davidmoten.rx.jdbc.Database;
 import com.squareup.okhttp.OkHttpClient;
@@ -33,10 +33,10 @@ public class MailCrawler {
 
         ExecutorService fixedThreadPool = Executors.newFixedThreadPool(8);
 
-        int start = 1, end = 632;
+        int start = 1, end = 720;
         tasks = new CountDownLatch(end);
 
-        for (int i = start; i <= 632; i++) {
+        for (int i = start; i <= end; i++) {
             final int number = i;
             fixedThreadPool.execute(() -> {
                 try {
