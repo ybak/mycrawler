@@ -56,30 +56,20 @@ private static void addMailIndexRequest(BulkRequestBuilder bulkRequest, Mail mai
 ``` sql
 select m from cheng12345 m where m.title like ? or m.content like ? or m.result like ? order by create_date desc limit ?,?
 ```
-  这里对多个字段...
+  用ES来实现相同的效果的代码也非常简单:
+``` java
+public static SearchHits searchByKeyword(String keyword, int from, int size) {
+    SearchRequestBuilder request = client.prepareSearch("chengdu12345")
+            .setSearchType(SearchType.DFS_QUERY_THEN_FETCH)
+            .setQuery(QueryBuilders.multiMatchQuery(keyword, "title", "content", "result")
+            .type(MatchQueryBuilder.Type.PHRASE))//完全匹配
+            .addSort("createDate", SortOrder.DESC)
+            .setFrom(from).setSize(size).setExplain(true);
 
-
-``` json
-{
-  "query": {
-    "multi_match": {
-      "query": "红牌楼",
-      "fields": [
-        "content",
-        "result",
-        "title"
-      ],
-      "type": "phrase"
-    }
-  },
-  "sort": [
-    {
-      "createDate": {
-        "order": "desc"
-      }
-    }
-  ],
-  "size": 100,
-  "from": 0
+    SearchResponse response = request.execute().actionGet();
+    return response.getHits();
 }
-``` 
+```  
+  这里需要注意的是,查询类型我选择的是短语查询(Type.PHRASE), 它能保证搜索时输入的短语不被拆分, 否则我输入"红牌楼"查询时,可能返回一堆包含"红楼"的邮件列表, 这明显不是我想要的结果.
+  
+  另外, Springdata同样提供了对ES的(支持)[http://docs.spring.io/spring-data/elasticsearch/docs/current/reference/html/], 它像对JPA一样提供了对Repository模板方法的支持.也能简化不少ES api的操作代码.
