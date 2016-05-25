@@ -1,8 +1,10 @@
 # 市长信箱邮件查询服务: 使用Elasticsearch 替代 Mysql
 
-我在上一篇文章中实现一个基于Springboot构建的web应用: 市长信箱邮件查询服务. 应用将邮件信息抓取后,将数据保存在Mysql中,用以提供给搜索Web使用.使用mysql能快速实现功能, 但使用like查询性能上不太好, 数据量大了就必须考虑使用搜索引擎了. 这次我们把Mysql替换为Elasticsearch(ES).
+我在上一篇文章中实现了一个基于Springboot构建的web应用: 市长信箱邮件查询服务. 应用将邮件信息抓取后保存在Mysql中,用以提供给搜索Web使用.Mysql虽然集成简单，能快速实现功能, 但like查询性能一般, 尤其数据量大了之后就必须考虑使用搜索引擎. 所以这次我把存储从Mysql替换为Elasticsearch(ES).
 
-Elasticsearch提供了两种API来进行操作: Rest API与Java Native. Java Native的执行效率更高, 且与项目集成更方便. 我们这里使用Java native Api操作Elasticsearch. 引入Java native Api,需要在根pom.xml添加依赖:
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+Elasticsearch提供了两种方式API来进行调用: Rest API与Java Native. Java Native的执行效率更高, 并且与当前项目集成更方便，所以我这里选择了Java native Api. 引入Java native Api,只需要在根pom.xml添加依赖:
 ``` xml
 <dependency>
     <groupId>org.elasticsearch</groupId>
@@ -11,12 +13,12 @@ Elasticsearch提供了两种API来进行操作: Rest API与Java Native. Java Nat
 </dependency>
 ``` 
 
-使用ES替换Mysql,需要考虑这两个方面:
-1. 存储: 将Mysql的insert保存数据,改为使用调用ES的添加文档操作.
-2. 查询: 替换Mysql的查询sql语句,改为调用ES的搜索接口.
+使用ES替换Mysql,需要考虑这两方面:
+1. 存储: 将Mysql的insert插入数据改为ES的添加文档操作.
+2. 查询: 替换Mysql的查询sql语句,改为ES的搜索操作.
 
 ## 存储:
-  我们的邮件结构没有内嵌其他复杂对象, 所以从mysql转换为ES的文档非常简单. 只需简单调用ES的添加文档API即可:
+  由于我们的邮件结构简单，没有内嵌其他复杂对象, 所以从mysql转换为ES的文档非常自然. 只需调用ES的添加文档API即可:
 ``` java
 public static void indexMails(Iterable<Mail> mails) {
     BulkRequestBuilder bulkRequest = client.prepareBulk();
@@ -49,14 +51,14 @@ private static void addMailIndexRequest(BulkRequestBuilder bulkRequest, Mail mai
     }
 }
 ```
-以上代码中,我使用了批量添加(bulkRequest)的API, 以减少API调用次数.
+在以上代码中,我使用了批量添加(bulkRequest)API, 以减少API调用次数.
 
 ## 查询: 
-  邮件的查询sql如下:
+  之前Mysql中邮件的查询sql如下:
 ``` sql
 select m from cheng12345 m where m.title like ? or m.content like ? or m.result like ? order by create_date desc limit ?,?
 ```
-  用ES来实现相同的效果的代码也非常简单:
+  用ES来实现SQL对应效果的代码也非常简单:
 ``` java
 public static SearchHits searchByKeyword(String keyword, int from, int size) {
     SearchRequestBuilder request = client.prepareSearch("chengdu12345")
@@ -72,4 +74,4 @@ public static SearchHits searchByKeyword(String keyword, int from, int size) {
 ```  
   这里需要注意的是,查询类型我选择的是短语查询(Type.PHRASE), 它能保证搜索时输入的短语不被拆分, 否则我输入"红牌楼"查询时,可能返回一堆包含"红楼"的邮件列表, 这明显不是我想要的结果.
   
-  另外, Springdata同样提供了对ES的(支持)[http://docs.spring.io/spring-data/elasticsearch/docs/current/reference/html/], 它像对JPA一样提供了对Repository模板方法的支持.也能简化不少ES api的操作代码.
+  另外, Springdata同样提供了对ES的[支持](http://docs.spring.io/spring-data/elasticsearch/docs/current/reference/html/), 它像对JPA一样提供了基于Repository模板方法的支持.使用它能简化不少ES Api的操作代码.
