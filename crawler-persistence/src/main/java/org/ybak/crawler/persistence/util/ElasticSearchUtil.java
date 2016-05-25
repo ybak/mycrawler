@@ -46,7 +46,7 @@ public class ElasticSearchUtil {
         SearchRequestBuilder request = client.prepareSearch("chengdu12345")
                 .setSearchType(SearchType.DFS_QUERY_THEN_FETCH)
                 .setQuery(QueryBuilders.multiMatchQuery(keyword, "title", "content", "result")
-                .type(MatchQueryBuilder.Type.PHRASE)) // Query
+                .type(MatchQueryBuilder.Type.PHRASE))//完全匹配
                 .addSort("createDate", SortOrder.DESC)
                 .setFrom(from).setSize(size).setExplain(true);
 
@@ -66,19 +66,19 @@ public class ElasticSearchUtil {
     private static void addMailIndexRequest(BulkRequestBuilder bulkRequest, Mail mail) {
         try {
             bulkRequest.add(client.prepareIndex("chengdu12345", "mail")
-                            .setSource(XContentFactory.jsonBuilder()
-                                    .startObject()
-                                    .field("content", mail.content)
-                                    .field("createDate", mail.createDate)
-                                    .field("acceptUnit", mail.acceptUnit)
-                                    .field("category", mail.category)
-                                    .field("result", mail.result)
-                                    .field("sender", mail.sender)
-                                    .field("status", mail.status)
-                                    .field("title", mail.title)
-                                    .field("url", mail.url)
-                                    .field("views", mail.views)
-                                    .endObject())
+                .setSource(XContentFactory.jsonBuilder()
+                    .startObject()
+                    .field("content", mail.content)
+                    .field("createDate", mail.createDate)
+                    .field("acceptUnit", mail.acceptUnit)
+                    .field("category", mail.category)
+                    .field("result", mail.result)
+                    .field("sender", mail.sender)
+                    .field("status", mail.status)
+                    .field("title", mail.title)
+                    .field("url", mail.url)
+                    .field("views", mail.views)
+                    .endObject())
             );
         } catch (IOException e) {
             throw new RuntimeException(e);
