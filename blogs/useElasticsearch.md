@@ -14,8 +14,8 @@ Elasticsearch提供了两种方式API来进行调用: Rest API与Java Native. Ja
 ``` 
 
 使用ES替换Mysql,需要考虑这两方面:
-1. 存储: 将Mysql的insert插入数据改为ES的添加文档操作.
-2. 查询: 替换Mysql的查询sql语句,改为ES的搜索操作.
+ 1. 存储: 将Mysql的insert插入数据改为ES的添加文档操作.
+ 2. 查询: 替换Mysql的查询sql语句,改为ES的搜索操作.
 
 ## 存储:
   由于我们的邮件结构简单，没有内嵌其他复杂对象, 所以从mysql转换为ES的文档非常自然. 只需调用ES的添加文档API即可:
@@ -74,4 +74,4 @@ public static SearchHits searchByKeyword(String keyword, int from, int size) {
 ```  
   这里需要注意的是,查询类型我选择的是短语查询(Type.PHRASE), 它能保证搜索时输入的短语不被拆分, 否则我输入"红牌楼"查询时,可能返回一堆包含"红楼"的邮件列表, 这明显不是我想要的结果.
   
-  另外, Springdata同样提供了对ES的[支持](http://docs.spring.io/spring-data/elasticsearch/docs/current/reference/html/), 它像对JPA一样提供了基于Repository模板方法的支持.使用它能简化不少ES Api的操作代码.
+  另外, Springdata同样提供了对ES的[支持](http://docs.spring.io/spring-data/elasticsearch/docs/current/reference/html/), 它像对JPA一样提供了基于Repository模板方法支持,利用它能简化不少对ES操作的代码.
