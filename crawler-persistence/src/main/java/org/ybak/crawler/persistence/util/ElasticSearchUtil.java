@@ -24,12 +24,25 @@ import java.net.InetAddress;
  */
 public class ElasticSearchUtil {
 
-    public static Client client;
+    public TransportClient client;
 
-    static {
+    public ElasticSearchUtil(String nodesStr) {
+        if (nodesStr != null) {
+            init(nodesStr);
+        } else {
+            init("localhost:9300");
+        }
+    }
+
+    private void init(String nodesStr) {
+        String[] split = nodesStr.split(";");
         try {
-            client = TransportClient.builder().build()
-                    .addTransportAddress(new InetSocketTransportAddress(InetAddress.getByName("localhost"), 9300));
+
+            client = TransportClient.builder().build();
+            for (String s : split) {
+                String[] node = s.split(":");
+                client.addTransportAddress(new InetSocketTransportAddress(InetAddress.getByName(node[0]), Integer.valueOf(node[1])));
+            }
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
@@ -38,23 +51,23 @@ public class ElasticSearchUtil {
     public static void main(String[] args) throws Exception {
         int size = 20;
         String keyword = "红牌楼";
-        SearchHits result = searchByKeyword(keyword ,0, 20);
+        SearchHits result = new ElasticSearchUtil(null).searchByKeyword(keyword, 0, 20);
         System.out.println(result);
     }
 
-    public static SearchHits searchByKeyword(String keyword, int from, int size) {
+    public SearchHits searchByKeyword(String keyword, int from, int size) {
         SearchRequestBuilder request = client.prepareSearch("chengdu12345")
-                .setSearchType(SearchType.DFS_QUERY_THEN_FETCH)
-                .setQuery(QueryBuilders.multiMatchQuery(keyword, "title", "content", "result")
-                .type(MatchQueryBuilder.Type.PHRASE))//完全匹配
-                .addSort("createDate", SortOrder.DESC)
-                .setFrom(from).setSize(size).setExplain(true);
+            .setSearchType(SearchType.DFS_QUERY_THEN_FETCH)
+            .setQuery(QueryBuilders.multiMatchQuery(keyword, "title", "content", "result")
+            .type(MatchQueryBuilder.Type.PHRASE))//完全匹配
+            .addSort("createDate", SortOrder.DESC)
+            .setFrom(from).setSize(size).setExplain(true);
 
         SearchResponse response = request.execute().actionGet();
         return response.getHits();
     }
 
-    public static void indexMails(Iterable<Mail> mails) {
+    public void indexMails(Iterable<Mail> mails) {
         BulkRequestBuilder bulkRequest = client.prepareBulk();
         for (Mail mail : mails) {
             addMailIndexRequest(bulkRequest, mail);
@@ -63,7 +76,7 @@ public class ElasticSearchUtil {
         System.out.println(JSON.toJSONString(bulkResponse));
     }
 
-    private static void addMailIndexRequest(BulkRequestBuilder bulkRequest, Mail mail) {
+    private void addMailIndexRequest(BulkRequestBuilder bulkRequest, Mail mail) {
         try {
             bulkRequest.add(client.prepareIndex("chengdu12345", "mail")
                 .setSource(XContentFactory.jsonBuilder()
