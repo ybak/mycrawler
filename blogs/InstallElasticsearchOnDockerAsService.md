@@ -13,8 +13,24 @@
 ``` shell
 docker-machine start
 eval "$(docker-machine env default)"
-docker run -p 9200:9200 -p 9300:9300 -v "$home/.esdata/node1":/usr/share/elasticsearch/data elasticsearch:2.3.3
+docker run -d -p 9200:9200 -p 9300:9300 -v "$home/.esdata/node1":/usr/share/elasticsearch/data elasticsearch:2.3.3 -Des.node.name="node1"
 ```
-
-参见: https://github.com/docker-library/docs/tree/master/elasticsearch
+说明:
+-d 后台运行
+-p 宿主机端口:docker容器端口
 -v "本地挂载路径":docker容器目录路径
+-Des.node.name es节点名称
+
+参见: 
+https://github.com/docker-library/docs/tree/master/elasticsearch
+https://www.elastic.co/blog/docker-networking
+
+尝试使用docker-compose组合集群.
+http://www.tuicool.com/articles/AnIVJn
+
+
+eval "$(docker-machine env default)"
+
+docker run -p 9200:9200 -p 9300:9300 -v "$home/.esdata/node1":/usr/share/elasticsearch/data elasticsearch:2.3.3 -Des.node.name="node1" -Des.discovery.zen.ping.unicast.hosts=192.168.99.100
+
+docker run -p 9201:9200 -p 9301:9300 -v "$home/.esdata/node2":/usr/share/elasticsearch/data elasticsearch:2.3.3 -Des.node.name="node2" -Des.discovery.zen.ping.unicast.hosts=192.168.99.100
