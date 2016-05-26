@@ -7,12 +7,9 @@ import org.jsoup.select.Elements;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.boot.orm.jpa.EntityScan;
-import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 import org.ybak.crawler.downloader.chengdu12345.HtmlParser;
 import org.ybak.crawler.downloader.util.HtmlUtil;
-import org.ybak.crawler.persistence.repo.MailRepository;
-import org.ybak.crawler.persistence.util.ElasticSearchUtil;
+import org.ybak.crawler.persistence.service.MailService;
 import org.ybak.crawler.persistence.vo.Mail;
 
 import javax.annotation.PostConstruct;
@@ -22,9 +19,11 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 
-@SpringBootApplication
-@EnableJpaRepositories("org.ybak.crawler.persistence.repo")
-@EntityScan("org.ybak.crawler.persistence.vo")
+@SpringBootApplication(scanBasePackages = {
+        "org.ybak.crawler.persistence.service"
+})
+//@EnableElasticsearchRepositories("org.ybak.crawler.persistence.repo")
+//@EntityScan("org.ybak.crawler.persistence.vo")
 public class MailCrawler {
 
     static String urlPrefix = "http://12345.chengdu.gov.cn/";
@@ -33,7 +32,7 @@ public class MailCrawler {
     static Set<Integer> failedNumbers = new HashSet<Integer>();
 
     @Autowired
-    MailRepository repo;
+    MailService mailService;
 
     public static void main(String[] args) throws Exception {
         SpringApplication.run(MailCrawler.class, args);
@@ -59,7 +58,7 @@ public class MailCrawler {
         System.out.println(failedNumbers);
     }
 
-    private static void craw(int number) {
+    private void craw(int number) {
         String pageUrl = urlPrefix + "moreMail?page=" + number;
         System.out.println("开始抓取：" + number);
         try {
@@ -87,7 +86,7 @@ public class MailCrawler {
                 pageMails.add(mail);
                 System.out.println("结束抓取：" + number + ", 抓取成功, 剩余任务：" + (tasks.getCount() - 1));
             }
-            ElasticSearchUtil.indexMails(pageMails);
+            mailService.save(pageMails);
         } catch (Exception e) {
             e.printStackTrace();
             failedNumbers.add(number);

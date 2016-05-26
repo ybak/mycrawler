@@ -1,42 +1,37 @@
 package org.ybak.crawler.persistence.vo;
 
-import javax.persistence.*;
 import java.io.Serializable;
 import java.util.Date;
 
 /**
  * Created by happy on 2016/5/22.
  */
-@Entity
-@Table(name = "chengdu12345")
-@NamedQuery(name = "Mail.search",
-        query = "select m from Mail m where m.title like ?1 or m.content like ?1 or m.result like ?1")
+//@Document(indexName = "chengdu12345", type = "mail")
 public class Mail implements Serializable {
 
-    @Id
-    @GeneratedValue
+//    @Id
     public Long id;
 
-    @Column
+    
     public String url;
 
-    @Column
+    
     public String sender;
-    @Column
+    
     public String title;
-    @Column
+    
     public String acceptUnit;
-    @Column
+    
     public String status;
-    @Column
+    
     public String category;
-    @Column
+    
     public int views;
-    @Column
+    
     public Date createDate;
-    @Column
+    
     public String content;
-    @Column
+    
     public String result;
 
     public Mail() {
