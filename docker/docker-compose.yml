@@ -5,7 +5,7 @@ elasticsearch_master:
       - "9200:9200"
       - "9300:9300"
     volumes:
-      - ~/.esdata/node2:/usr/share/elasticsearch/data
+      - /.esdata/node2:/usr/share/elasticsearch/data
 
 elasticsearch1:
     image: elasticsearch:2.3.3
@@ -13,4 +13,4 @@ elasticsearch1:
     links:
       - elasticsearch_master
     volumes:
-      - ~/.esdata/node1:/usr/share/elasticsearch/data
+      - /.esdata/node1:/usr/share/elasticsearch/data
