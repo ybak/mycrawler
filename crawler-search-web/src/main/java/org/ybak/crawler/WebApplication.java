@@ -1,12 +1,15 @@
-package org.ybak.crawler.web;
+package org.ybak.crawler;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+
+//@SpringBootApplication
 
 @SpringBootApplication(scanBasePackages = {
         "org.ybak.crawler.persistence.service",
         "org.ybak.crawler.web"
 })
+
 //@EnableJpaRepositories("org.ybak.crawler.persistence.repo")
 //@EntityScan("org.ybak.crawler.persistence.vo")
 public class WebApplication {

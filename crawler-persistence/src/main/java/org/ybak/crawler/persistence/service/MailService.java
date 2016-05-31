@@ -23,7 +23,7 @@ import java.util.Map;
 public class MailService {
 
 //    @Autowired
-    private MailRepository mailRepository;
+//    private MailRepository mailRepository;
 
     private ElasticSearchUtil elasticSearchUtil;
 
