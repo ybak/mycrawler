@@ -99,7 +99,7 @@ for (Element element : elements) {
 
 ### crawler-search-web:页面模块
 
-页面模块是使用SpringBoot启动的模块. 该模块功能非常简单:
+ . 该模块功能非常简单:
 
 1. 提供一个静态页面
 2. 提供一个搜索API

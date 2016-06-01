@@ -58,10 +58,12 @@
             <plugin>
                 <groupId>com.spotify</groupId>
                 <artifactId>docker-maven-plugin</artifactId>
-                <version>0.2.3</version>
+                <version>0.4.10</version>
                 <configuration>
                     <imageName>${docker.image.prefix}/${project.artifactId}</imageName>
-                    <dockerDirectory>src/main/docker</dockerDirectory>
+                    <baseImage>frolvlad/alpine-oraclejdk8:slim</baseImage>
+                    <cmd>sh -c 'touch /${project.build.finalName}.war'</cmd>
+                    <entryPoint>["java","-Djava.security.egd=file:/dev/./urandom","-jar","/${project.build.finalName}.war"]</entryPoint>
                     <resources>
                         <resource>
                             <targetPath>/</targetPath>
