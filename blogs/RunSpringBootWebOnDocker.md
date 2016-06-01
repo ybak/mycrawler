@@ -1,4 +1,4 @@
-# 市长信箱邮件查询服务: 将SringBoot应用部署到Docker
+# 市长信箱邮件查询服务: 将SpringBoot应用部署到Docker
 
 在上一章, 我完成了将ES部署到Docker的工作. SpringBoot和Docker都具有能快速启动的特性, 因此SpringBoot+Docker是一对用来部署微服务的黄金搭档. 在计划中, 基于SpringBoot的web应用也将部署到Docker之上, 那我们就开始行动吧.
 
