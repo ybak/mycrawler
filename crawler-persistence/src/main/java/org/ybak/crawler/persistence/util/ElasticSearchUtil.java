@@ -6,7 +6,7 @@ import org.elasticsearch.action.bulk.BulkResponse;
 import org.elasticsearch.action.search.SearchRequestBuilder;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.action.search.SearchType;
-import org.elasticsearch.client.Client;
+import org.elasticsearch.action.update.UpdateRequest;
 import org.elasticsearch.client.transport.TransportClient;
 import org.elasticsearch.common.transport.InetSocketTransportAddress;
 import org.elasticsearch.common.xcontent.XContentFactory;
@@ -57,11 +57,11 @@ public class ElasticSearchUtil {
 
     public SearchHits searchByKeyword(String keyword, int from, int size) {
         SearchRequestBuilder request = client.prepareSearch("chengdu12345")
-            .setSearchType(SearchType.DFS_QUERY_THEN_FETCH)
-            .setQuery(QueryBuilders.multiMatchQuery(keyword, "title", "content", "result")
-            .type(MatchQueryBuilder.Type.PHRASE))//完全匹配
-            .addSort("createDate", SortOrder.DESC)
-            .setFrom(from).setSize(size).setExplain(true);
+                .setSearchType(SearchType.DFS_QUERY_THEN_FETCH)
+                .setQuery(QueryBuilders.multiMatchQuery(keyword, "title", "content", "result")
+                        .type(MatchQueryBuilder.Type.PHRASE))//完全匹配
+                .addSort("createDate", SortOrder.DESC)
+                .setFrom(from).setSize(size).setExplain(true);
 
         SearchResponse response = request.execute().actionGet();
         return response.getHits();
@@ -79,21 +79,40 @@ public class ElasticSearchUtil {
     private void addMailIndexRequest(BulkRequestBuilder bulkRequest, Mail mail) {
         try {
             bulkRequest.add(client.prepareIndex("chengdu12345", "mail")
-                .setSource(XContentFactory.jsonBuilder()
-                    .startObject()
-                    .field("content", mail.content)
-                    .field("createDate", mail.createDate)
-                    .field("acceptUnit", mail.acceptUnit)
-                    .field("category", mail.category)
-                    .field("result", mail.result)
-                    .field("sender", mail.sender)
-                    .field("status", mail.status)
-                    .field("title", mail.title)
-                    .field("url", mail.url)
-                    .field("views", mail.views)
-                    .endObject())
+                            .setSource(XContentFactory.jsonBuilder()
+                                    .startObject()
+                                    .field("content", mail.content)
+                                    .field("createDate", mail.createDate)
+                                    .field("acceptUnit", mail.acceptUnit)
+                                    .field("category", mail.category)
+                                    .field("result", mail.result)
+                                    .field("sender", mail.sender)
+                                    .field("status", mail.status)
+                                    .field("title", mail.title)
+                                    .field("url", mail.url)
+                                    .field("views", mail.views)
+                                    .endObject())
             );
         } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public void updateMail(Mail mail) {
+        try {
+            UpdateRequest updateRequest = new UpdateRequest();
+            updateRequest.index("chengdu12345");
+            updateRequest.type("mail");
+            updateRequest.id(mail.id);
+
+            updateRequest.doc(XContentFactory.jsonBuilder()
+                    .startObject()
+                    .field("result", mail.result)
+                    .field("status", mail.status)
+                    .endObject());
+
+            client.update(updateRequest).get();
+        } catch (Exception e) {
             throw new RuntimeException(e);
         }
     }

@@ -33,4 +33,11 @@ public class WelcomeController {
         return mailService.search(keyword, query);
     }
 
+    @RequestMapping("/update")
+    @ResponseBody
+    public String update(Mail mail) {
+        mailService.update(mail);
+        return "ok";
+    }
+
 }

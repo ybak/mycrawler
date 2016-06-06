@@ -13,6 +13,7 @@ import org.ybak.crawler.persistence.service.MailService;
 import org.ybak.crawler.persistence.vo.Mail;
 
 import javax.annotation.PostConstruct;
+import java.io.IOException;
 import java.util.*;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
@@ -69,20 +70,7 @@ public class MailCrawler {
             for (Element element : elements) {
                 String url = urlPrefix + element.select("a").attr("href");
 
-                Elements divs = element.select("div");
-                String title = divs.get(0).text();
-                String sender = divs.get(1).text();
-                String receiveUnit = divs.get(2).text();
-                String status = divs.get(3).text();
-                String category = divs.get(4).text();
-                String views = divs.get(5).text();
-
-                String contentHtml = HtmlUtil.getURLBody(url);
-                Document contentDoc = Jsoup.parse(contentHtml);
-                String content = HtmlParser.getContent(contentDoc);
-                String handleResult = HtmlParser.getResult(contentDoc);
-                Date publishDate =  HtmlParser.getPublishTime(contentDoc);
-                Mail mail = new Mail(url, sender, title, receiveUnit, status, category, Integer.parseInt(views),  publishDate, content, handleResult);
+                Mail mail = crawSingleMail(element, url);
                 pageMails.add(mail);
                 System.out.println("结束抓取：" + number + ", 抓取成功, 剩余任务：" + (tasks.getCount() - 1));
             }
@@ -93,6 +81,31 @@ public class MailCrawler {
             System.out.println("结束抓取：" + number + ", status=" + e.getMessage() + ", 剩余任务：" + (tasks.getCount() - 1));
         } finally {
         }
+    }
+
+    private Mail crawSingleMail(Element element, String url) throws IOException {
+        Elements divs = element.select("div");
+        String title = divs.get(0).text();
+        String sender = divs.get(1).text();
+        String receiveUnit = divs.get(2).text();
+        String status = divs.get(3).text();
+        String category = divs.get(4).text();
+        String views = divs.get(5).text();
+
+        String contentHtml = HtmlUtil.getURLBody(url);
+        Document contentDoc = Jsoup.parse(contentHtml);
+        String content = HtmlParser.getContent(contentDoc);
+        String handleResult = HtmlParser.getResult(contentDoc);
+        Date publishDate = HtmlParser.getPublishTime(contentDoc);
+        return new Mail(url, sender, title, receiveUnit, status, category, Integer.parseInt(views), publishDate, content, handleResult);
+    }
+
+    private void updateMail(Mail mail) throws IOException {
+        String url = mail.url;
+        String contentHtml = HtmlUtil.getURLBody(url);
+        Document contentDoc = Jsoup.parse(contentHtml);
+        mail.result = HtmlParser.getResult(contentDoc);
+        mailService.update(mail);
     }
 
 }

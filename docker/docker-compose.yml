@@ -1,3 +1,11 @@
+elasticsearch1:
+    image: elasticsearch:2.3.3
+    command: "elasticsearch -Des.cluster.name=elasticsearch -Des.discovery.zen.ping.unicast.hosts=elasticsearch_master"
+    links:
+      - elasticsearch_master
+    volumes:
+      - /.esdata/node1:/usr/share/elasticsearch/data
+
 elasticsearch_master:
     image: elasticsearch:2.3.3
     command: "elasticsearch -Des.cluster.name=elasticsearch -Des.node.master=true"
@@ -7,10 +15,11 @@ elasticsearch_master:
     volumes:
       - /.esdata/node2:/usr/share/elasticsearch/data
 
-elasticsearch1:
-    image: elasticsearch:2.3.3
-    command: "elasticsearch -Des.cluster.name=elasticsearch -Des.discovery.zen.ping.unicast.hosts=elasticsearch_master"
+search_web:
+    image: ybak/crawler-search-web
+    ports:
+      - "80:8080"
+    environment:
+      SPRING_PROFILES_ACTIVE: prod
     links:
       - elasticsearch_master
-    volumes:
-      - /.esdata/node1:/usr/share/elasticsearch/data

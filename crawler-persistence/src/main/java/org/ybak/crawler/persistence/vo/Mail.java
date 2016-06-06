@@ -10,9 +10,8 @@ import java.util.Date;
 public class Mail implements Serializable {
 
 //    @Id
-    public Long id;
+    public String id;
 
-    
     public String url;
 
     

@@ -31,7 +31,7 @@ public class MailService {
     private String nodes;
 
     @PostConstruct
-    public void init(){
+    public void init() {
         elasticSearchUtil = new ElasticSearchUtil(nodes);
     }
 
@@ -40,7 +40,9 @@ public class MailService {
         List<Map<String, Object>> result = new ArrayList<>();
 
         for (SearchHit hit : searchHits.getHits()) {
-            result.add(hit.getSource());
+            Map<String, Object> source = hit.getSource();
+            source.put("id", hit.getId());
+            result.add(source);
         }
 
         return new PageImpl<Map<String, Object>>(result, pageable, searchHits.getTotalHits());
@@ -48,5 +50,9 @@ public class MailService {
 
     public void save(List<Mail> mails) {
         elasticSearchUtil.indexMails(mails);
+    }
+
+    public void update(Mail mail) {
+        elasticSearchUtil.updateMail(mail);
     }
 }
