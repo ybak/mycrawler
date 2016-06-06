@@ -65,14 +65,15 @@
         });
     });
 
-    $('.updateBtn').click(function (event) {
+    $(document).on('click', '.updateBtn',function (event) {
         $('#myModal').modal('show');
         event.preventDefault();
-        var id = $(this).data('id'),
-            url = $(this).data('url');
+        var $target = $(this);
+        var id = $target.data('id'),
+            url = $target.data('url');
         $.post('/update', {'id': id, 'url':url} , function (data) {
             $('#myModal').modal('hide');
-            
+            $target.siblings('.result').text(data.result);
         });
     });
 })();
@@ -80,10 +81,10 @@
 <script id="template" type="x-tmpl-mustache">
 {{#content}}
 <a class="list-group-item">
-    <button class="updateBtn" data-id="{{id}}">更新</button>
     <h3 class="list-group-item-heading">{{title}}</h3>
     <p class="list-group-item-text">{{content}}</p>
-    <p class="list-group-item-text">{{result}}</p>
+    <button class="updateBtn" style="float:right" data-id="{{id}}" data-url="{{url}}">更新</button>
+    <p class="list-group-item-text result">{{result}}</p>
 </a>
 {{/content}}
 </script>

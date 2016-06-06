@@ -7,6 +7,7 @@ import org.jsoup.select.Elements;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.stereotype.Service;
 import org.ybak.crawler.downloader.chengdu12345.HtmlParser;
 import org.ybak.crawler.downloader.util.HtmlUtil;
 import org.ybak.crawler.persistence.service.MailService;
@@ -20,46 +21,19 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 
-@SpringBootApplication(scanBasePackages = {
-        "org.ybak.crawler.persistence.service"
-})
-//@EnableElasticsearchRepositories("org.ybak.crawler.persistence.repo")
-//@EntityScan("org.ybak.crawler.persistence.vo")
+
+@Service
 public class MailCrawler {
 
     static String urlPrefix = "http://12345.chengdu.gov.cn/";
-    static CountDownLatch tasks;
+    public static CountDownLatch tasks;
 
-    static Set<Integer> failedNumbers = new HashSet<Integer>();
+    public static Set<Integer> failedNumbers = new HashSet<Integer>();
 
     @Autowired
     MailService mailService;
 
-    public static void main(String[] args) throws Exception {
-        SpringApplication.run(MailCrawler.class, args);
-    }
-
-    @PostConstruct
-    public void init() throws Exception {
-        ExecutorService fixedThreadPool = Executors.newFixedThreadPool(8);
-        int start = 1, end = 720;
-        tasks = new CountDownLatch(end);
-        for (int i = start; i <= end; i++) {
-            final int number = i;
-            fixedThreadPool.execute(() -> {
-                try {
-                    craw(number);
-                } finally {
-                    tasks.countDown();
-                }
-            });
-        }
-        tasks.await();
-        fixedThreadPool.shutdownNow();
-        System.out.println(failedNumbers);
-    }
-
-    private void craw(int number) {
+    public void craw(int number) {
         String pageUrl = urlPrefix + "moreMail?page=" + number;
         System.out.println("开始抓取：" + number);
         try {
@@ -100,12 +74,17 @@ public class MailCrawler {
         return new Mail(url, sender, title, receiveUnit, status, category, Integer.parseInt(views), publishDate, content, handleResult);
     }
 
-    private void updateMail(Mail mail) throws IOException {
-        String url = mail.url;
-        String contentHtml = HtmlUtil.getURLBody(url);
-        Document contentDoc = Jsoup.parse(contentHtml);
-        mail.result = HtmlParser.getResult(contentDoc);
-        mailService.update(mail);
+    public Mail updateMail(String id, String url) {
+        try {
+            String contentHtml = HtmlUtil.getURLBody(url);
+            Document contentDoc = Jsoup.parse(contentHtml);
+            Mail mail = new Mail(id);
+            mail.result = HtmlParser.getResult(contentDoc);
+            mailService.update(mail);
+            return mail;
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
     }
 
 }

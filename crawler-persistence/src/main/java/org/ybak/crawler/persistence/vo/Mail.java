@@ -36,6 +36,10 @@ public class Mail implements Serializable {
     public Mail() {
     }
 
+    public Mail(String id) {
+        this.id = id;
+    }
+
     public Mail(String url, String sender, String title, String acceptUnit, String status, String category, int views, Date createDate, String content, String result) {
         this.url = url;
         this.sender = sender;

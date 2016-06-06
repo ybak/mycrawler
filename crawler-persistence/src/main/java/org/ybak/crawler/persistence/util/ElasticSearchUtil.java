@@ -108,7 +108,7 @@ public class ElasticSearchUtil {
             updateRequest.doc(XContentFactory.jsonBuilder()
                     .startObject()
                     .field("result", mail.result)
-                    .field("status", mail.status)
+//                    .field("status", mail.status)
                     .endObject());
 
             client.update(updateRequest).get();

@@ -7,6 +7,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 @SpringBootApplication(scanBasePackages = {
         "org.ybak.crawler.persistence.service",
+        "org.ybak.crawler.downloader.chengdu12345.es",
         "org.ybak.crawler.web"
 })
 
