@@ -64,11 +64,23 @@
             }
         });
     });
+
+    $('.updateBtn').click(function (event) {
+        $('#myModal').modal('show');
+        event.preventDefault();
+        var id = $(this).data('id'),
+            url = $(this).data('url');
+        $.post('/update', {'id': id, 'url':url} , function (data) {
+            $('#myModal').modal('hide');
+            
+        });
+    });
 })();
 </script>
 <script id="template" type="x-tmpl-mustache">
 {{#content}}
 <a class="list-group-item">
+    <button class="updateBtn" data-id="{{id}}">更新</button>
     <h3 class="list-group-item-heading">{{title}}</h3>
     <p class="list-group-item-text">{{content}}</p>
     <p class="list-group-item-text">{{result}}</p>
