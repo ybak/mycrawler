@@ -1,11 +1,3 @@
-elasticsearch1:
-    image: elasticsearch:2.3.3
-    command: "elasticsearch -Des.cluster.name=elasticsearch -Des.discovery.zen.ping.unicast.hosts=elasticsearch_master"
-    links:
-      - elasticsearch_master
-    volumes:
-      - /.esdata/node1:/usr/share/elasticsearch/data
-
 elasticsearch_master:
     image: elasticsearch:2.3.3
     command: "elasticsearch -Des.cluster.name=elasticsearch -Des.node.master=true"
@@ -13,4 +5,14 @@ elasticsearch_master:
       - "9200:9200"
       - "9300:9300"
     volumes:
-      - /.esdata/node2:/usr/share/elasticsearch/data
+      - /Users/isaac/work/data:/usr/share/elasticsearch/data
+    user: "1000"
+
+elasticsearch1:
+    image: elasticsearch:2.3.3
+    command: "elasticsearch -Des.cluster.name=elasticsearch -Des.discovery.zen.ping.unicast.hosts=elasticsearch_master"
+    links:
+      - elasticsearch_master
+    volumes:
+      - /Users/isaac/work/data:/usr/share/elasticsearch/data
+    user: "1000"

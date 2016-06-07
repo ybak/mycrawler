@@ -5,21 +5,17 @@ import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.SpringApplication;
-import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.stereotype.Service;
 import org.ybak.crawler.downloader.chengdu12345.HtmlParser;
 import org.ybak.crawler.downloader.util.HtmlUtil;
 import org.ybak.crawler.persistence.service.MailService;
 import org.ybak.crawler.persistence.vo.Mail;
 
-import javax.annotation.PostConstruct;
 import java.io.IOException;
 import java.util.*;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-
 
 
 @Service
@@ -31,7 +27,31 @@ public class MailCrawler {
     public static Set<Integer> failedNumbers = new HashSet<Integer>();
 
     @Autowired
-    MailService mailService;
+    public MailService mailService;
+
+    public void crawAll() {
+        ExecutorService fixedThreadPool = Executors.newFixedThreadPool(8);
+        int start = 1, end = 720;
+        tasks = new CountDownLatch(end);
+        for (int i = start; i <= end; i++) {
+            final int number = i;
+            fixedThreadPool.execute(() -> {
+                try {
+                    craw(number);
+                } finally {
+                    tasks.countDown();
+                }
+            });
+        }
+        try {
+            tasks.await();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        fixedThreadPool.shutdownNow();
+        System.out.println(failedNumbers);
+    }
+
 
     public void craw(int number) {
         String pageUrl = urlPrefix + "moreMail?page=" + number;
