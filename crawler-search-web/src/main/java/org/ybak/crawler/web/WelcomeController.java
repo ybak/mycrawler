@@ -4,6 +4,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.messaging.handler.annotation.MessageMapping;
+import org.springframework.messaging.simp.annotation.SendToUser;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
@@ -21,12 +23,6 @@ public class WelcomeController {
     @Autowired
     private MailCrawler mailCrawler;
 
-    @RequestMapping("/")
-    public String welcome() {
-        return "welcome";
-    }
-
-
     @RequestMapping("/search")
     @ResponseBody
     public PageImpl<Map<String, Object>> search(String keyword) {
@@ -38,6 +34,11 @@ public class WelcomeController {
     @ResponseBody
     public Mail update(String id, String url) {
         return mailCrawler.updateMail(id, url);
+    }
+
+    @MessageMapping("/hello")
+    public String greeting() throws Exception {
+        return "ok";
     }
 
 }
