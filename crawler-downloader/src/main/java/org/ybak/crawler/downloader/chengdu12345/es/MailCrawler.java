@@ -4,6 +4,8 @@ import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.ybak.crawler.downloader.chengdu12345.HtmlParser;
@@ -21,6 +23,8 @@ import java.util.concurrent.Executors;
 @Service
 public class MailCrawler {
 
+    private static final Logger logger = LoggerFactory.getLogger(MailCrawler.class);
+
     static String urlPrefix = "http://12345.chengdu.gov.cn/";
     public static CountDownLatch tasks;
 
@@ -37,7 +41,7 @@ public class MailCrawler {
             final int number = i;
             fixedThreadPool.execute(() -> {
                 try {
-                    craw(number);
+                    crawPage(number);
                 } finally {
                     tasks.countDown();
                 }
@@ -49,14 +53,13 @@ public class MailCrawler {
             e.printStackTrace();
         }
         fixedThreadPool.shutdownNow();
-        System.out.println(failedNumbers);
+        logger.info("" + failedNumbers);
     }
 
-
-    public void craw(int number) {
-        String pageUrl = urlPrefix + "moreMail?page=" + number;
-        System.out.println("开始抓取：" + number);
+    public void crawPage(int number) {
         try {
+            String pageUrl = urlPrefix + "moreMail?page=" + number;
+            logger.info("开始抓取：" + number);
             String html = HtmlUtil.getURLBody(pageUrl);
             Document doc = Jsoup.parse(html);
             Elements elements = doc.select("div.left5 ul li.f12px");
@@ -66,15 +69,44 @@ public class MailCrawler {
 
                 Mail mail = crawSingleMail(element, url);
                 pageMails.add(mail);
-                System.out.println("结束抓取：" + number + ", 抓取成功, 剩余任务：" + (tasks.getCount() - 1));
+                logger.info("结束抓取：" + number + ", 抓取成功, 剩余任务：" + (tasks.getCount() - 1));
             }
             mailService.save(pageMails);
         } catch (Exception e) {
             e.printStackTrace();
             failedNumbers.add(number);
-            System.out.println("结束抓取：" + number + ", status=" + e.getMessage() + ", 剩余任务：" + (tasks.getCount() - 1));
+            logger.info("结束抓取：" + number + ", status=" + e.getMessage() + ", 剩余任务：" + (tasks.getCount() - 1));
         } finally {
         }
+    }
+
+    /**
+     * craw current page, and decide should craw next page
+     *
+     * @param number
+     * @return should continue
+     */
+    public boolean updatePage(int number) {
+        boolean shouldContinue = false;
+        try {
+            String pageUrl = urlPrefix + "moreMail?page=" + number;
+            String html = HtmlUtil.getURLBody(pageUrl);
+            Document doc = Jsoup.parse(html);
+            Elements elements = doc.select("div.left5 ul li.f12px");
+            List<Mail> pageMails = new ArrayList<>();
+            for (Element element : elements) {
+                String url = urlPrefix + element.select("a").attr("href");
+
+                Mail newMail = crawSingleMail(element, url);
+
+
+
+            }
+            shouldContinue = true;
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return shouldContinue;
     }
 
     private Mail crawSingleMail(Element element, String url) throws IOException {
