@@ -4,6 +4,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.messaging.Message;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.simp.SimpMessageHeaderAccessor;
@@ -16,12 +17,17 @@ import org.ybak.crawler.persistence.service.MailService;
 import org.ybak.crawler.persistence.vo.Mail;
 
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 @Controller
 public class CrawController {
 
+    public static final String LOCK_KEY = "local:craw:increase";
     @Autowired
     private SimpMessagingTemplate msgTemplate;
+
+    @Autowired
+    private StringRedisTemplate redisTemplate;
 
     @Autowired
     private MailService mailService;
@@ -32,6 +38,13 @@ public class CrawController {
     @RequestMapping("/search")
     @ResponseBody
     public PageImpl<Map<String, Object>> search(String keyword) {
+        Boolean locked = redisTemplate.opsForValue().setIfAbsent(LOCK_KEY, "1");
+        if(locked){
+            redisTemplate.expire(LOCK_KEY, 5, TimeUnit.SECONDS);
+        }else{
+            throw new RuntimeException("访问太频繁");
+        }
+
         Pageable query = new PageRequest(0, 100);
         return mailService.search(keyword, query);
     }
@@ -45,6 +58,12 @@ public class CrawController {
     @MessageMapping("/craw/increase")
     public String increaseCraw(Message<?> message) throws Exception {
         String sessionId = SimpMessageHeaderAccessor.getSessionId(message.getHeaders());
+        Boolean locked = redisTemplate.opsForValue().setIfAbsent(LOCK_KEY, "1");
+        if(locked){
+            redisTemplate.expire(LOCK_KEY, 5, TimeUnit.MINUTES);
+        }else{
+            return "locked";
+        }
 
         new Thread() {
             @Override

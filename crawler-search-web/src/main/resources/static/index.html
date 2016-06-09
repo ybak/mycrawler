@@ -64,6 +64,9 @@
                 var rendered = Mustache.render(template, data);
                 $('div.list-group').html(rendered);
             }
+        }).fail(function(e) {
+            $('#myModal').modal('hide');
+            alert(e.responseJSON.message);
         });
     });
 

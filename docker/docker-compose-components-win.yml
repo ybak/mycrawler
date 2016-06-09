@@ -13,13 +13,3 @@ redis_master:
     ports:
       - "6379:6379"
     user: "1000"
-
-search_web:
-    image: ybak/crawler-search-web
-    ports:
-      - "80:8080"
-    environment:
-      SPRING_PROFILES_ACTIVE: prod
-    links:
-      - elasticsearch_master
-      - redis_master
