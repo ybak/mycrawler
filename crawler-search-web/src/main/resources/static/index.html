@@ -3,29 +3,26 @@
 <head>
     <title>邮件查询</title>
     <link rel="stylesheet" href="http://cdn.bootcss.com/bootstrap/3.3.6/css/bootstrap.min.css"/>
-    <script src="//libs.useso.com/js/jquery/2.1.1/jquery.min.js"></script>
+    <script src="//cdn.bootcss.com/jquery/2.1.1/jquery.min.js"></script>
+    <!--<script src="//cdn.bootcss.com/lodash.js/4.13.1/lodash.min.js"></script>-->
     <script src="//cdn.bootcss.com/bootstrap/3.3.6/js/bootstrap.min.js"></script>
     <script src="//cdn.bootcss.com/mustache.js/2.2.1/mustache.min.js"></script>
     <script src="sockjs-0.3.4.js"></script>
     <script src="stomp.js"></script>
+    <script src="index.js"></script>
 </head>
 <body>
 <div class="container">
     <h1 class="page-header">内容检索</h1>
     <div class="navbar navbar-default">
-        <div class="container-fluid">
-            <div class="navbar-header">
-                <a class="navbar-brand" href="#">请输入检索内容</a>
+        <form class="form-inline searchForm">
+            <div class="form-group">
+                <label for="keyword">关键字:</label>
+                <input type="text" class="form-control keyword" id="keyword" placeholder="请输入检索内容">
             </div>
-            <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-2">
-                <form class="navbar-form navbar-left searchForm" role="search">
-                    <div class="form-group">
-                        <input type="text" class="form-control keyword" placeholder="搜索"></input>
-                    </div>
-                    <button type="submit" class="btn btn-default">提交</button>
-                </form>
-            </div>
-        </div>
+            <button type="submit" class="btn btn-primary">提交</button>
+            <button type="button" class="btn btn-default update-all">同步所有邮件</button>
+        </form>
     </div>
     <div class="ibox float-e-margins">
         <div class="ibox-title">
@@ -37,11 +34,11 @@
     </div>
 </div>
 <!-- Modal -->
-<div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+<div class="modal fade" id="waitModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" data-backdrop="static" data-keyboard="false">
     <div class="modal-dialog" role="document">
         <div class="modal-content">
             <div class="modal-header">
-                <h4 class="modal-title" id="myModalLabel">请求处理中...</h4>
+                <h4 class="modal-title">请求处理中...</h4>
             </div>
             <div class="modal-body">
                 <div class="progress">
@@ -51,38 +48,20 @@
         </div>
     </div>
 </div>
-<script>
-(function () {
-    $('form.searchForm').submit(function (event) {
-        $('#myModal').modal('show');
-        event.preventDefault();
-        $.get('/search?keyword=' + $('input.keyword').val(), function (data) {
-            $('#myModal').modal('hide');
-            if (data.content) {
-                var template = $('#template').html();
-                Mustache.parse(template);
-                var rendered = Mustache.render(template, data);
-                $('div.list-group').html(rendered);
-            }
-        }).fail(function(e) {
-            $('#myModal').modal('hide');
-            alert(e.responseJSON.message);
-        });
-    });
-
-    $(document).on('click', '.updateBtn',function (event) {
-        $('#myModal').modal('show');
-        event.preventDefault();
-        var $target = $(this);
-        var id = $target.data('id'),
-            url = $target.data('url');
-        $.post('/update', {'id': id, 'url':url} , function (data) {
-            $('#myModal').modal('hide');
-            $target.siblings('.result').text(data.result);
-        });
-    });
-})();
-</script>
+<div class="modal fade" id="progressModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" data-backdrop="static" data-keyboard="false">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title">邮件更新中...</h4>
+            </div>
+            <div class="modal-body">
+                <div class="progress">
+                    <div class="progress-bar progress-bar-success progress-bar-striped active" role="progressbar" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100" style="width: 0%"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
 <script id="template" type="x-tmpl-mustache">
 {{#content}}
 <a class="list-group-item">
