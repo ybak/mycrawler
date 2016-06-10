@@ -1,5 +1,6 @@
 package org.ybak.crawler.downloader.chengdu12345.es;
 
+import org.apache.commons.lang.StringUtils;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
@@ -93,16 +94,23 @@ public class MailCrawler {
             String html = HtmlUtil.getURLBody(pageUrl);
             Document doc = Jsoup.parse(html);
             Elements elements = doc.select("div.left5 ul li.f12px");
-            List<Mail> pageMails = new ArrayList<>();
+
             for (Element element : elements) {
                 String url = urlPrefix + element.select("a").attr("href");
-
                 Mail newMail = crawSingleMail(element, url);
-
-
-
+                Mail oldMail = mailService.queryMailByURL(url);
+                if(oldMail != null){
+                    boolean resultUpdated = !StringUtils.equals(oldMail.result, newMail.result);
+                    if(resultUpdated){
+                        shouldContinue = true;
+                        newMail.id = oldMail.id;
+                        mailService.update(newMail);
+                    }
+                }else{
+                    mailService.save(Arrays.asList(newMail));
+                    shouldContinue = true;
+                }
             }
-            shouldContinue = true;
         } catch (Exception e) {
             e.printStackTrace();
         }

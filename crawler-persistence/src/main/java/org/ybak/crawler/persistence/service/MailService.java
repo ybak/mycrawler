@@ -55,4 +55,20 @@ public class MailService {
     public void update(Mail mail) {
         elasticSearchUtil.updateMail(mail);
     }
+
+    public Mail queryMailByURL(String url) {
+        SearchHits searchHits = elasticSearchUtil.searchByURL(url);
+        SearchHit[] hits = searchHits.getHits();
+        for (SearchHit hit : hits) {
+            Map<String, Object> source = hit.getSource();
+            Mail mail = new Mail();
+            mail.acceptUnit = (String) source.get("acceptUnit");
+            mail.result = (String) source.get("result");
+            mail.content = (String) source.get("content");
+            mail.id = hit.getId();
+            //todo
+            return mail;
+        }
+        return null;
+    }
 }

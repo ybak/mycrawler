@@ -73,6 +73,7 @@ public class CrawController {
                     if (!shouldContinue) {
                         break;
                     }
+                    msgTemplate.convertAndSendToUser(sessionId, "/", "");
                 }
                 msgTemplate.convertAndSendToUser(sessionId, "/", "");
             }

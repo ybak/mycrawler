@@ -7,6 +7,7 @@ import org.elasticsearch.action.search.SearchRequestBuilder;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.action.search.SearchType;
 import org.elasticsearch.action.update.UpdateRequest;
+import org.elasticsearch.action.update.UpdateResponse;
 import org.elasticsearch.client.transport.TransportClient;
 import org.elasticsearch.common.transport.InetSocketTransportAddress;
 import org.elasticsearch.common.xcontent.XContentFactory;
@@ -18,6 +19,7 @@ import org.ybak.crawler.persistence.vo.Mail;
 
 import java.io.IOException;
 import java.net.InetAddress;
+import java.util.Arrays;
 
 /**
  * Created by isaac on 16/5/23.
@@ -67,6 +69,16 @@ public class ElasticSearchUtil {
         return response.getHits();
     }
 
+    public SearchHits searchByURL(String url) {
+        SearchRequestBuilder request = client.prepareSearch("chengdu12345")
+                .setSearchType(SearchType.DFS_QUERY_THEN_FETCH)
+                .setQuery(QueryBuilders.matchPhraseQuery("url", url))
+                .addSort("createDate", SortOrder.DESC);
+
+        SearchResponse response = request.execute().actionGet();
+        return response.getHits();
+    }
+
     public void indexMails(Iterable<Mail> mails) {
         BulkRequestBuilder bulkRequest = client.prepareBulk();
         for (Mail mail : mails) {
@@ -79,19 +91,19 @@ public class ElasticSearchUtil {
     private void addMailIndexRequest(BulkRequestBuilder bulkRequest, Mail mail) {
         try {
             bulkRequest.add(client.prepareIndex("chengdu12345", "mail")
-                            .setSource(XContentFactory.jsonBuilder()
-                                    .startObject()
-                                    .field("content", mail.content)
-                                    .field("createDate", mail.createDate)
-                                    .field("acceptUnit", mail.acceptUnit)
-                                    .field("category", mail.category)
-                                    .field("result", mail.result)
-                                    .field("sender", mail.sender)
-                                    .field("status", mail.status)
-                                    .field("title", mail.title)
-                                    .field("url", mail.url)
-                                    .field("views", mail.views)
-                                    .endObject())
+                    .setSource(XContentFactory.jsonBuilder()
+                            .startObject()
+                            .field("content", mail.content)
+                            .field("createDate", mail.createDate)
+                            .field("acceptUnit", mail.acceptUnit)
+                            .field("category", mail.category)
+                            .field("result", mail.result)
+                            .field("sender", mail.sender)
+                            .field("status", mail.status)
+                            .field("title", mail.title)
+                            .field("url", mail.url)
+                            .field("views", mail.views)
+                            .endObject())
             );
         } catch (IOException e) {
             throw new RuntimeException(e);
@@ -111,7 +123,8 @@ public class ElasticSearchUtil {
 //                    .field("status", mail.status)
                     .endObject());
 
-            client.update(updateRequest).get();
+            UpdateResponse updateResponse = client.update(updateRequest).get();
+            System.out.println(JSON.toJSONString(updateResponse));
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
