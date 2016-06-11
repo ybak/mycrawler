@@ -69,16 +69,16 @@ public class CrawController {
             @Override
             public void run() {
                 mailService.initIndexIfAbsent();
-                CrawProgress progress = new CrawProgress(1000);
-                for (int i = 1; i < 1000; i++) {//最大1000页邮件
-                    boolean shouldContinue = mailCrawler.updatePage(i);
-                    progress.current = i;
+                CrawProgress progress = new CrawProgress(500);
+                for (int i = 0; i < 500; i++) {//最大1000页邮件
+                    boolean shouldContinue = mailCrawler.updatePage(500 - i);
+                    progress.current = i+1;
                     msgTemplate.convertAndSend("/topic/progress", progress);
                     if (!shouldContinue) {
                         break;
                     }
                 }
-                progress.current = 1000;
+                progress.current = 500;
                 msgTemplate.convertAndSend("/topic/progress", progress);
             }
         }.start();

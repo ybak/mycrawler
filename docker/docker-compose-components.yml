@@ -1,0 +1,15 @@
+elasticsearch_master:
+    image: elasticsearch:2.3.3
+    command: "elasticsearch -Des.cluster.name=elasticsearch -Des.node.master=true"
+    ports:
+      - "9200:9200"
+      - "9300:9300"
+    volumes:
+      - /Users/isaac/work/data:/usr/share/elasticsearch/data
+    user: "1000"
+
+redis_master:
+    image: redis:3.2
+    ports:
+      - "6379:6379"
+    user: "1000"

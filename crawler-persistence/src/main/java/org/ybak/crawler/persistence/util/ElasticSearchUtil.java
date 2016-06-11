@@ -21,16 +21,21 @@ import org.elasticsearch.index.query.MatchQueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.search.SearchHits;
 import org.elasticsearch.search.sort.SortOrder;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.ybak.crawler.persistence.vo.Mail;
 
 import java.io.IOException;
 import java.net.InetAddress;
 import java.util.Arrays;
+import java.util.Date;
 
 /**
  * Created by isaac on 16/5/23.
  */
 public class ElasticSearchUtil {
+
+    private static final Logger logger = LoggerFactory.getLogger(ElasticSearchUtil.class);
 
     public TransportClient client;
 
@@ -137,17 +142,12 @@ public class ElasticSearchUtil {
     }
 
     public void createIndexIfAbsend() {
-        IndicesExistsRequest request = new IndicesExistsRequest("chengdu12345");
-        IndicesAdminClient indicesAdminClient = client.admin().indices();
-        ActionFuture<IndicesExistsResponse> exists = indicesAdminClient.exists(request);
         try{
-            if(!exists.get().isExists()){
-                CreateIndexRequest cReq = new CreateIndexRequest("chengdu12345");
-                ActionFuture<CreateIndexResponse> resp = indicesAdminClient.create(cReq);
-
-            }
+            searchByKeyword("test", 0, 1);
         }catch (Exception e){
-            throw new RuntimeException(e);
+            logger.warn(e.getMessage());
+            Mail mail = new Mail("url","sender","title","unit","status","category",1,new Date(),"content","result");
+            indexMails(Arrays.asList(mail));
         }
     }
 }

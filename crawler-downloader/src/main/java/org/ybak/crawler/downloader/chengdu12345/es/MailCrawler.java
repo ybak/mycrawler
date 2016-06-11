@@ -51,7 +51,7 @@ public class MailCrawler {
         try {
             tasks.await();
         } catch (InterruptedException e) {
-            e.printStackTrace();
+            logger.error("error", e);
         }
         fixedThreadPool.shutdownNow();
         logger.info("" + failedNumbers);
@@ -74,7 +74,7 @@ public class MailCrawler {
             }
             mailService.save(pageMails);
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.error("抓取失败", e);
             failedNumbers.add(number);
             logger.info("结束抓取：" + number + ", status=" + e.getMessage() + ", 剩余任务：" + (tasks.getCount() - 1));
         } finally {
@@ -95,6 +95,7 @@ public class MailCrawler {
             Document doc = Jsoup.parse(html);
             Elements elements = doc.select("div.left5 ul li.f12px");
 
+            int unchangedMails = 0;
             for (Element element : elements) {
                 String url = urlPrefix + element.select("a").attr("href");
                 Mail newMail = crawSingleMail(element, url);
@@ -102,9 +103,12 @@ public class MailCrawler {
                 if(oldMail != null){
                     boolean resultUpdated = !StringUtils.equals(oldMail.result, newMail.result);
                     if(resultUpdated){
-                        shouldContinue = true;
                         newMail.id = oldMail.id;
                         mailService.update(newMail);
+                    }
+                    unchangedMails = resultUpdated ? unchangedMails: unchangedMails + 1;
+                    if(unchangedMails > 2){//当两个邮件未变更时, 跳过当前页的更新
+                        return false;
                     }
                 }else{
                     mailService.save(Arrays.asList(newMail));
@@ -112,7 +116,7 @@ public class MailCrawler {
                 }
             }
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.error("抓取失败", e);
         }
         return shouldContinue;
     }
