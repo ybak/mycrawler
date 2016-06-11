@@ -20,17 +20,10 @@ $(function(){
     //增量更新全部邮件
     $('button.update-all').click(function (e) {
         e.preventDefault();
+        connect();
         $('#progressModal .progress-bar').width('0%');
         $('#progressModal').modal('show');
-        for(var i = 0; i< 100; i++){
-            var n = 0;
-            setTimeout(function () {
-                $('#progressModal .progress-bar').width(++n + '%');
-                if(n >= 100){
-                    $('#progressModal').modal('hide');
-                }
-            }, i * 100);
-        }
+
     });
 
     //更新当前邮件
@@ -45,4 +38,32 @@ $(function(){
             $target.siblings('.result').text(data.result);
         });
     });
+
+    var stompClient = null;
+
+    function connect() {
+        var socket = new SockJS('/ws');
+        disconnect();
+        stompClient = Stomp.over(socket);
+        stompClient.connect({}, function(frame) {
+            console.log('Connected: ' + frame);
+            stompClient.subscribe('/topic/progress', function(msg){
+                console.log('Msg Received: ' + msg);
+                var body = JSON.parse(msg.body);
+                $('#progressModal .progress-bar').width(body.progress + '%');
+                if(body.progress >= 100){
+                    $('#progressModal').modal('hide');
+                }
+            });
+            stompClient.send("/app/craw/start", {}, '{}');
+        });
+    }
+
+    function disconnect() {
+        if (stompClient != null) {
+            stompClient.disconnect();
+        }
+        console.log("Disconnected");
+    }
+
 });

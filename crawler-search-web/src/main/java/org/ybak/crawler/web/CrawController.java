@@ -39,9 +39,9 @@ public class CrawController {
     @ResponseBody
     public PageImpl<Map<String, Object>> search(String keyword) {
         Boolean locked = redisTemplate.opsForValue().setIfAbsent(LOCK_KEY, "1");
-        if(locked){
+        if (locked) {
             redisTemplate.expire(LOCK_KEY, 5, TimeUnit.SECONDS);
-        }else{
+        } else {
             throw new RuntimeException("访问太频繁");
         }
 
@@ -55,27 +55,31 @@ public class CrawController {
         return mailCrawler.updateMail(id, url);
     }
 
-    @MessageMapping("/craw/increase")
+    @MessageMapping("/craw/start")
     public String increaseCraw(Message<?> message) throws Exception {
         String sessionId = SimpMessageHeaderAccessor.getSessionId(message.getHeaders());
         Boolean locked = redisTemplate.opsForValue().setIfAbsent(LOCK_KEY, "1");
-        if(locked){
-            redisTemplate.expire(LOCK_KEY, 5, TimeUnit.MINUTES);
-        }else{
+        if (locked) {
+            redisTemplate.expire(LOCK_KEY, 1, TimeUnit.MINUTES);
+        } else {
             return "locked";
         }
 
         new Thread() {
             @Override
             public void run() {
-                for (int i = 0; i < 1000; i++) {//最大1000页邮件
-                    boolean shouldContinue = mailCrawler.updatePage(1);
+                mailService.initIndexIfAbsent();
+                CrawProgress progress = new CrawProgress(1000);
+                for (int i = 1; i < 1000; i++) {//最大1000页邮件
+                    boolean shouldContinue = mailCrawler.updatePage(i);
+                    progress.current = i;
+                    msgTemplate.convertAndSend("/topic/progress", progress);
                     if (!shouldContinue) {
                         break;
                     }
-                    msgTemplate.convertAndSendToUser(sessionId, "/", "");
                 }
-                msgTemplate.convertAndSendToUser(sessionId, "/", "");
+                progress.current = 1000;
+                msgTemplate.convertAndSend("/topic/progress", progress);
             }
         }.start();
 

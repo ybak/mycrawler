@@ -1,6 +1,11 @@
 package org.ybak.crawler.persistence.util;
 
 import com.alibaba.fastjson.JSON;
+import org.elasticsearch.action.ActionFuture;
+import org.elasticsearch.action.admin.indices.create.CreateIndexRequest;
+import org.elasticsearch.action.admin.indices.create.CreateIndexResponse;
+import org.elasticsearch.action.admin.indices.exists.indices.IndicesExistsRequest;
+import org.elasticsearch.action.admin.indices.exists.indices.IndicesExistsResponse;
 import org.elasticsearch.action.bulk.BulkRequestBuilder;
 import org.elasticsearch.action.bulk.BulkResponse;
 import org.elasticsearch.action.search.SearchRequestBuilder;
@@ -8,6 +13,7 @@ import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.action.search.SearchType;
 import org.elasticsearch.action.update.UpdateRequest;
 import org.elasticsearch.action.update.UpdateResponse;
+import org.elasticsearch.client.IndicesAdminClient;
 import org.elasticsearch.client.transport.TransportClient;
 import org.elasticsearch.common.transport.InetSocketTransportAddress;
 import org.elasticsearch.common.xcontent.XContentFactory;
@@ -126,6 +132,21 @@ public class ElasticSearchUtil {
             UpdateResponse updateResponse = client.update(updateRequest).get();
             System.out.println(JSON.toJSONString(updateResponse));
         } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public void createIndexIfAbsend() {
+        IndicesExistsRequest request = new IndicesExistsRequest("chengdu12345");
+        IndicesAdminClient indicesAdminClient = client.admin().indices();
+        ActionFuture<IndicesExistsResponse> exists = indicesAdminClient.exists(request);
+        try{
+            if(!exists.get().isExists()){
+                CreateIndexRequest cReq = new CreateIndexRequest("chengdu12345");
+                ActionFuture<CreateIndexResponse> resp = indicesAdminClient.create(cReq);
+
+            }
+        }catch (Exception e){
             throw new RuntimeException(e);
         }
     }

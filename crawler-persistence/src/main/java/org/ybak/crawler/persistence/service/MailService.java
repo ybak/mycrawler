@@ -71,4 +71,8 @@ public class MailService {
         }
         return null;
     }
+
+    public void initIndexIfAbsent() {
+        elasticSearchUtil.createIndexIfAbsend();
+    }
 }
