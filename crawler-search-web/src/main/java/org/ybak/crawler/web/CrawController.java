@@ -18,6 +18,7 @@ import org.ybak.crawler.persistence.vo.Mail;
 
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 @Controller
 public class CrawController {
@@ -69,14 +70,22 @@ public class CrawController {
             @Override
             public void run() {
                 mailService.initIndexIfAbsent();
+                BoundedExecutor executor = new BoundedExecutor(5);
+                AtomicBoolean shouldContinue = new AtomicBoolean(true);
                 CrawProgress progress = new CrawProgress(500);
+
                 for (int i = 0; i < 500; i++) {//最大1000页邮件
-                    boolean shouldContinue = mailCrawler.updatePage(500 - i);
-                    progress.current = i+1;
-                    msgTemplate.convertAndSend("/topic/progress", progress);
-                    if (!shouldContinue) {
-                        break;
-                    }
+                    int page = i;
+
+                    executor.submitTask(() -> {
+                        shouldContinue.set(mailCrawler.updatePage(500 - page));
+                        progress.current = page;
+                        msgTemplate.convertAndSend("/topic/progress", progress);
+                    });
+
+//                    if (!shouldContinue.get()) {
+//                        break;
+//                    }
                 }
                 progress.current = 500;
                 msgTemplate.convertAndSend("/topic/progress", progress);
