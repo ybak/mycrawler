@@ -57,8 +57,7 @@ public class CrawController {
     }
 
     @MessageMapping("/craw/start")
-    public String increaseCraw(Message<?> message) throws Exception {
-        String sessionId = SimpMessageHeaderAccessor.getSessionId(message.getHeaders());
+    public String increaseCraw(String jobId) throws Exception {
         Boolean locked = redisTemplate.opsForValue().setIfAbsent(LOCK_KEY, "1");
         if (locked) {
             redisTemplate.expire(LOCK_KEY, 1, TimeUnit.MINUTES);
@@ -78,17 +77,16 @@ public class CrawController {
                     int page = i;
 
                     executor.submitTask(() -> {
-                        shouldContinue.set(mailCrawler.updatePage(500 - page));
+                        shouldContinue.set(mailCrawler.updatePage(page + 1));
                         progress.current = page;
-                        msgTemplate.convertAndSend("/topic/progress", progress);
+                        msgTemplate.convertAndSend("/topic/progress/" + jobId, progress);
                     });
-
 //                    if (!shouldContinue.get()) {
 //                        break;
 //                    }
                 }
                 progress.current = 500;
-                msgTemplate.convertAndSend("/topic/progress", progress);
+                msgTemplate.convertAndSend("/topic/progress/" + jobId, progress);
             }
         }.start();
 

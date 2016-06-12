@@ -1,4 +1,4 @@
-$(function(){
+$(function () {
     //提交表单
     $('form.searchForm').submit(function (event) {
         $('#waitModal').modal('show');
@@ -11,7 +11,7 @@ $(function(){
                 var rendered = Mustache.render(template, data);
                 $('div.list-group').html(rendered);
             }
-        }).fail(function(e) {
+        }).fail(function (e) {
             $('#waitModal').modal('hide');
             alert(e.responseJSON.message);
         });
@@ -27,13 +27,13 @@ $(function(){
     });
 
     //更新当前邮件
-    $(document).on('click', '.updateBtn',function (e) {
+    $(document).on('click', '.updateBtn', function (e) {
         $('#waitModal').modal('show');
         e.preventDefault();
         var $target = $(this);
         var id = $target.data('id'),
             url = $target.data('url');
-        $.post('/update', {'id': id, 'url':url} , function (data) {
+        $.post('/update', {'id': id, 'url': url}, function (data) {
             $('#waitModal').modal('hide');
             $target.siblings('.result').text(data.result);
         });
@@ -45,17 +45,19 @@ $(function(){
         var socket = new SockJS('/ws');
         disconnect();
         stompClient = Stomp.over(socket);
-        stompClient.connect({}, function(frame) {
+        stompClient.connect({}, function (frame) {
             console.log('Connected: ' + frame);
-            stompClient.subscribe('/topic/progress', function(msg){
+            var jobId = Date.now();
+
+            stompClient.subscribe('/topic/progress/' + jobId, function (msg) {
                 console.log('Msg Received: ' + msg);
                 var body = JSON.parse(msg.body);
                 $('#progressModal .progress-bar').width(body.progress + '%');
-                if(body.progress >= 100){
+                if (body.progress >= 100) {
                     $('#progressModal').modal('hide');
                 }
             });
-            stompClient.send("/app/craw/start", {}, '{}');
+            stompClient.send("/app/craw/start", {}, jobId);
         });
     }
 
