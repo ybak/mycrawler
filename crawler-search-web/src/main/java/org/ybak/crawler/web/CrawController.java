@@ -26,11 +26,9 @@ public class CrawController {
     public static final String LOCK_KEY = "local:craw:increase";
     @Autowired
     private SimpMessagingTemplate msgTemplate;
-
     @Autowired
     private StringRedisTemplate redisTemplate;
-
-    @Autowired
+     @Autowired
     private MailService mailService;
 
     @Autowired

@@ -4,11 +4,15 @@ elasticsearch_master:
     ports:
       - "9200:9200"
       - "9300:9300"
+    volumes:
+      - /c/Users/happy/docker_data:/usr/share/elasticsearch/data
+    user: "1000"
 
 redis_master:
     image: redis:3.2
     ports:
       - "6379:6379"
+    user: "1000"
 
 search_web:
     image: ybak/crawler-search-web
