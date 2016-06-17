@@ -16,7 +16,11 @@ import java.util.Date;
  */
 public class ContentProcessor {
 
-    static DateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+    static ThreadLocal<DateFormat> df = new ThreadLocal() {
+        protected SimpleDateFormat initialValue() {
+            return new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        }
+    };
 
     public static void main(String[] args) {
         Database db = DBUtil.getDB();
@@ -43,17 +47,17 @@ public class ContentProcessor {
         }
     }
 
-    private static Date getPublishTime(Document doc) {
+    public static Date getPublishTime(Document doc) {
         String publishString = doc.select("#info_released_dtime").text();
         try {
-            return df.parse(publishString);
+            return df.get().parse(publishString);
         } catch (ParseException e) {
             System.out.println("解析时间出错:" + publishString);
             return new Date();
         }
     }
 
-    private static String getTitle(Document doc) {
+    public static String getTitle(Document doc) {
         String title = doc.title();
         String[] split = title.split("--");
         if (split.length > 1) {

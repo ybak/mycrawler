@@ -13,6 +13,7 @@ import org.springframework.web.socket.config.annotation.StompEndpointRegistry;
 @SpringBootApplication(scanBasePackages = {
         "org.ybak.crawler.persistence.service",
         "org.ybak.crawler.downloader.chengdu12345.es",
+        "org.ybak.crawler.downloader.cdgh",
         "org.ybak.crawler.web"
 })
 @EnableWebSocketMessageBroker

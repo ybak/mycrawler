@@ -5,34 +5,33 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.redis.core.StringRedisTemplate;
-import org.springframework.messaging.Message;
 import org.springframework.messaging.handler.annotation.MessageMapping;
-import org.springframework.messaging.simp.SimpMessageHeaderAccessor;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
-import org.ybak.crawler.downloader.chengdu12345.es.MailCrawler;
-import org.ybak.crawler.persistence.service.MailService;
-import org.ybak.crawler.persistence.vo.Mail;
+import org.ybak.crawler.downloader.cdgh.PlanCrawler;
+import org.ybak.crawler.persistence.service.PlanService;
+import org.ybak.crawler.persistence.vo.Plan;
 
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 @Controller
-public class CrawController {
+@RequestMapping(value = "/cdgh")
+@MessageMapping(value = "/cdgh")
+public class PlanCrawController {
 
-    public static final String LOCK_KEY = "local:craw:increase";
+    public static final String LOCK_KEY = "local:craw:cdgh:increase";
     @Autowired
     private SimpMessagingTemplate msgTemplate;
     @Autowired
     private StringRedisTemplate redisTemplate;
-     @Autowired
-    private MailService mailService;
-
     @Autowired
-    private MailCrawler mailCrawler;
+    private PlanService planService;
+    @Autowired
+    private PlanCrawler planCrawler;
 
     @RequestMapping("/search")
     @ResponseBody
@@ -45,13 +44,7 @@ public class CrawController {
         }
 
         Pageable query = new PageRequest(0, 100);
-        return mailService.search(keyword, query);
-    }
-
-    @RequestMapping("/update")
-    @ResponseBody
-    public Mail update(String id, String url) {
-        return mailCrawler.updateMail(id, url);
+        return planService.search(keyword, query);
     }
 
     @MessageMapping("/craw/start")
@@ -66,25 +59,25 @@ public class CrawController {
         new Thread() {
             @Override
             public void run() {
-                mailService.initIndexIfAbsent();
+                planService.initIndexIfAbsent();
                 BoundedExecutor executor = new BoundedExecutor(5);
                 AtomicBoolean shouldContinue = new AtomicBoolean(true);
-                CrawProgress progress = new CrawProgress(500);
+                CrawProgress progress = new CrawProgress(10000);
 
-                for (int i = 0; i < 500; i++) {//最大1000页邮件
+                for (int i = 0; i < 10000; i++) {//最大1000页邮件
                     int page = i;
 
                     executor.submitTask(() -> {
-                        shouldContinue.set(mailCrawler.updatePage(page + 1));
+                        shouldContinue.set(planCrawler.updatePage(page + 1));
                         progress.current = page;
-                        msgTemplate.convertAndSend("/topic/progress/" + jobId, progress);
+                        msgTemplate.convertAndSend("/topic/progress/cdgh/" + jobId, progress);
                     });
 //                    if (!shouldContinue.get()) {
 //                        break;
 //                    }
                 }
                 progress.current = 500;
-                msgTemplate.convertAndSend("/topic/progress/" + jobId, progress);
+                msgTemplate.convertAndSend("/topic/progress/cdgh/" + jobId, progress);
             }
         }.start();
 
