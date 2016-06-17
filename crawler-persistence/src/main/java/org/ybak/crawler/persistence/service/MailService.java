@@ -2,12 +2,10 @@ package org.ybak.crawler.persistence.service;
 
 import org.elasticsearch.search.SearchHit;
 import org.elasticsearch.search.SearchHits;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Component;
-import org.ybak.crawler.persistence.repo.MailRepository;
 import org.ybak.crawler.persistence.util.ElasticSearchUtil;
 import org.ybak.crawler.persistence.vo.Mail;
 
@@ -36,7 +34,7 @@ public class MailService {
     }
 
     public PageImpl<Map<String, Object>> search(String keyword, Pageable pageable) {
-        SearchHits searchHits = elasticSearchUtil.searchByKeyword(keyword, pageable.getOffset(), pageable.getPageSize());
+        SearchHits searchHits = elasticSearchUtil.searchByKeyword("chengdu12345", new String[]{"title", "content", "result"}, keyword, pageable.getOffset(), pageable.getPageSize());
         List<Map<String, Object>> result = new ArrayList<>();
 
         for (SearchHit hit : searchHits.getHits()) {

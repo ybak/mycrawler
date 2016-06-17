@@ -36,7 +36,7 @@ public class CrawController {
 
     @RequestMapping("/search")
     @ResponseBody
-    public PageImpl<Map<String, Object>> search(String keyword) {
+    public PageImpl<Map<String, Object>> search(String keyword, String site) {
         Boolean locked = redisTemplate.opsForValue().setIfAbsent(LOCK_KEY, "1");
         if (locked) {
             redisTemplate.expire(LOCK_KEY, 5, TimeUnit.SECONDS);

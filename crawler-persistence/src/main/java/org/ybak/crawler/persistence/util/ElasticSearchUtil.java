@@ -1,11 +1,8 @@
 package org.ybak.crawler.persistence.util;
 
 import com.alibaba.fastjson.JSON;
-import org.elasticsearch.action.ActionFuture;
-import org.elasticsearch.action.admin.indices.create.CreateIndexRequest;
-import org.elasticsearch.action.admin.indices.create.CreateIndexResponse;
-import org.elasticsearch.action.admin.indices.exists.indices.IndicesExistsRequest;
-import org.elasticsearch.action.admin.indices.exists.indices.IndicesExistsResponse;
+import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang.time.DateUtils;
 import org.elasticsearch.action.bulk.BulkRequestBuilder;
 import org.elasticsearch.action.bulk.BulkResponse;
 import org.elasticsearch.action.search.SearchRequestBuilder;
@@ -13,7 +10,6 @@ import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.action.search.SearchType;
 import org.elasticsearch.action.update.UpdateRequest;
 import org.elasticsearch.action.update.UpdateResponse;
-import org.elasticsearch.client.IndicesAdminClient;
 import org.elasticsearch.client.transport.TransportClient;
 import org.elasticsearch.common.transport.InetSocketTransportAddress;
 import org.elasticsearch.common.xcontent.XContentFactory;
@@ -64,16 +60,18 @@ public class ElasticSearchUtil {
     public static void main(String[] args) throws Exception {
         int size = 20;
         String keyword = "红牌楼";
-        SearchHits result = new ElasticSearchUtil(null).searchByKeyword(keyword, 0, 20);
+        SearchHits result = new ElasticSearchUtil(null).searchByKeyword("chengdu12345", new String[]{"title", "content", "result"}, keyword, 0, 20);
         System.out.println(result);
     }
 
-    public SearchHits searchByKeyword(String keyword, int from, int size) {
-        SearchRequestBuilder request = client.prepareSearch("chengdu12345")
-                .setSearchType(SearchType.DFS_QUERY_THEN_FETCH)
-                .setQuery(QueryBuilders.multiMatchQuery(keyword, "title", "content", "result")
-                        .type(MatchQueryBuilder.Type.PHRASE))//完全匹配
-                .addSort("createDate", SortOrder.DESC)
+    public SearchHits searchByKeyword(String index, String[] fields, String keyword, int from, int size) {
+        SearchRequestBuilder request = client.prepareSearch(index)
+                .setSearchType(SearchType.DFS_QUERY_THEN_FETCH);
+        if (StringUtils.isNotEmpty(keyword)) {
+            request.setQuery(QueryBuilders.multiMatchQuery(keyword, fields)
+                    .type(MatchQueryBuilder.Type.PHRASE));//完全匹配
+        }
+        request.addSort("createDate", SortOrder.DESC)
                 .setFrom(from).setSize(size).setExplain(true);
 
         SearchResponse response = request.execute().actionGet();
@@ -102,19 +100,19 @@ public class ElasticSearchUtil {
     private void addMailIndexRequest(BulkRequestBuilder bulkRequest, Mail mail) {
         try {
             bulkRequest.add(client.prepareIndex("chengdu12345", "mail")
-                    .setSource(XContentFactory.jsonBuilder()
-                            .startObject()
-                            .field("content", mail.content)
-                            .field("createDate", mail.createDate)
-                            .field("acceptUnit", mail.acceptUnit)
-                            .field("category", mail.category)
-                            .field("result", mail.result)
-                            .field("sender", mail.sender)
-                            .field("status", mail.status)
-                            .field("title", mail.title)
-                            .field("url", mail.url)
-                            .field("views", mail.views)
-                            .endObject())
+                            .setSource(XContentFactory.jsonBuilder()
+                                    .startObject()
+                                    .field("content", mail.content)
+                                    .field("createDate", mail.createDate)
+                                    .field("acceptUnit", mail.acceptUnit)
+                                    .field("category", mail.category)
+                                    .field("result", mail.result)
+                                    .field("sender", mail.sender)
+                                    .field("status", mail.status)
+                                    .field("title", mail.title)
+                                    .field("url", mail.url)
+                                    .field("views", mail.views)
+                                    .endObject())
             );
         } catch (IOException e) {
             throw new RuntimeException(e);
@@ -142,11 +140,11 @@ public class ElasticSearchUtil {
     }
 
     public void createIndexIfAbsend() {
-        try{
-            searchByKeyword("test", 0, 1);
-        }catch (Exception e){
+        try {
+            searchByKeyword("chengdu12345", new String[]{"title", "content", "result"}, "test", 0, 1);
+        } catch (Exception e) {
             logger.warn(e.getMessage());
-            Mail mail = new Mail("url","sender","title","unit","status","category",1,new Date(),"content","result");
+            Mail mail = new Mail("url", "sender", "title", "unit", "status", "category", 1, DateUtils.addYears(new Date(), -10), "content", "result");
             indexMails(Arrays.asList(mail));
         }
     }

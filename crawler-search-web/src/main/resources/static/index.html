@@ -6,7 +6,8 @@
     <script src="//cdn.bootcss.com/jquery/2.1.1/jquery.min.js"></script>
     <!--<script src="//cdn.bootcss.com/lodash.js/4.13.1/lodash.min.js"></script>-->
     <script src="//cdn.bootcss.com/bootstrap/3.3.6/js/bootstrap.min.js"></script>
-    <script src="//cdn.bootcss.com/mustache.js/2.2.1/mustache.min.js"></script>
+    <script src="//cdn.bootcss.com/handlebars.js/4.0.5/handlebars.min.js"></script>
+    <script src="//cdn.bootcss.com/moment.js/2.13.0/moment.min.js"></script>
     <script src="sockjs-0.3.4.js"></script>
     <script src="stomp.js"></script>
     <script src="index.js"></script>
@@ -67,18 +68,13 @@
 <a class="list-group-item">
     <h3 class="list-group-item-heading">{{title}}</h3>
     <p class="list-group-item-text">{{content}}</p>
-    <button class="updateBtn" style="float:right" data-id="{{id}}" data-url="{{url}}">更新</button>
     <p class="list-group-item-text result">{{result}}</p>
+    <div>
+        <span>{{formatDate createDate}}</span>
+        <button type="button" class="btn btn-default btn-xs updateBtn" data-id="{{id}}" data-url="{{url}}">更新</button>
+    </div>
 </a>
 {{/content}}
 </script>
-<style>
-    .list-group-item-text {
-        margin: 0 0 10px;
-        color: inherit;
-        font-size: 12px;
-        line-height: inherit;
-    }
-</style>
 </body>
 </html>

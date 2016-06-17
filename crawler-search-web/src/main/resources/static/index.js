@@ -1,3 +1,7 @@
+Handlebars.registerHelper('formatDate', function(date) {
+    return  moment(date).format('YYYY-MM-DD hh:mm:ss');
+});
+
 $(function () {
     //提交表单
     $('form.searchForm').submit(function (event) {
@@ -6,10 +10,8 @@ $(function () {
         $.get('/search?keyword=' + $('input.keyword').val(), function (data) {
             $('#waitModal').modal('hide');
             if (data.content) {
-                var template = $('#template').html();
-                Mustache.parse(template);
-                var rendered = Mustache.render(template, data);
-                $('div.list-group').html(rendered);
+                var template = Handlebars.compile($('#template').html());
+                $('div.list-group').html(template(data));
             }
         }).fail(function (e) {
             $('#waitModal').modal('hide');
