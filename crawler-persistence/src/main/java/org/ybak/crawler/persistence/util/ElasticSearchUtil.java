@@ -29,32 +29,14 @@ import java.util.Date;
 /**
  * Created by isaac on 16/5/23.
  */
-public class ElasticSearchUtil {
+public class ElasticSearchUtil extends BaseElasticSearchUtil {
 
     private static final Logger logger = LoggerFactory.getLogger(ElasticSearchUtil.class);
 
     public TransportClient client;
 
     public ElasticSearchUtil(String nodesStr) {
-        if (nodesStr != null) {
-            init(nodesStr);
-        } else {
-            init("localhost:9300");
-        }
-    }
-
-    private void init(String nodesStr) {
-        String[] split = nodesStr.split(";");
-        try {
-
-            client = TransportClient.builder().build();
-            for (String s : split) {
-                String[] node = s.split(":");
-                client.addTransportAddress(new InetSocketTransportAddress(InetAddress.getByName(node[0]), Integer.valueOf(node[1])));
-            }
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
+        super(nodesStr);
     }
 
     public static void main(String[] args) throws Exception {
@@ -62,20 +44,6 @@ public class ElasticSearchUtil {
         String keyword = "红牌楼";
         SearchHits result = new ElasticSearchUtil(null).searchByKeyword("chengdu12345", new String[]{"title", "content", "result"}, keyword, 0, 20);
         System.out.println(result);
-    }
-
-    public SearchHits searchByKeyword(String index, String[] fields, String keyword, int from, int size) {
-        SearchRequestBuilder request = client.prepareSearch(index)
-                .setSearchType(SearchType.DFS_QUERY_THEN_FETCH);
-        if (StringUtils.isNotEmpty(keyword)) {
-            request.setQuery(QueryBuilders.multiMatchQuery(keyword, fields)
-                    .type(MatchQueryBuilder.Type.PHRASE));//完全匹配
-        }
-        request.addSort("createDate", SortOrder.DESC)
-                .setFrom(from).setSize(size).setExplain(true);
-
-        SearchResponse response = request.execute().actionGet();
-        return response.getHits();
     }
 
     public SearchHits searchByURL(String url) {
@@ -100,19 +68,19 @@ public class ElasticSearchUtil {
     private void addMailIndexRequest(BulkRequestBuilder bulkRequest, Mail mail) {
         try {
             bulkRequest.add(client.prepareIndex("chengdu12345", "mail")
-                            .setSource(XContentFactory.jsonBuilder()
-                                    .startObject()
-                                    .field("content", mail.content)
-                                    .field("createDate", mail.createDate)
-                                    .field("acceptUnit", mail.acceptUnit)
-                                    .field("category", mail.category)
-                                    .field("result", mail.result)
-                                    .field("sender", mail.sender)
-                                    .field("status", mail.status)
-                                    .field("title", mail.title)
-                                    .field("url", mail.url)
-                                    .field("views", mail.views)
-                                    .endObject())
+                    .setSource(XContentFactory.jsonBuilder()
+                            .startObject()
+                            .field("content", mail.content)
+                            .field("createDate", mail.createDate)
+                            .field("acceptUnit", mail.acceptUnit)
+                            .field("category", mail.category)
+                            .field("result", mail.result)
+                            .field("sender", mail.sender)
+                            .field("status", mail.status)
+                            .field("title", mail.title)
+                            .field("url", mail.url)
+                            .field("views", mail.views)
+                            .endObject())
             );
         } catch (IOException e) {
             throw new RuntimeException(e);

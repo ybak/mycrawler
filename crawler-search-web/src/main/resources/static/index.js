@@ -37,7 +37,7 @@ $(function () {
             url = $target.data('url');
         $.post('/update', {'id': id, 'url': url}, function (data) {
             $('#waitModal').modal('hide');
-            $target.siblings('.result').text(data.result);
+            $target.closest('.mail-item').find('.result').text(data.result);
         });
     });
 

@@ -5,7 +5,7 @@ elasticsearch_master:
       - "9200:9200"
       - "9300:9300"
     volumes:
-      - /Users/isaac/work/data:/usr/share/elasticsearch/data
+      - ~/work/data:/usr/share/elasticsearch/data
     user: "1000"
 
 elasticsearch1:

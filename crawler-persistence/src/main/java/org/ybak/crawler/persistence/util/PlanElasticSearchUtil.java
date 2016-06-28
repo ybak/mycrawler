@@ -30,46 +30,12 @@ import java.util.Date;
 /**
  * Created by isaac on 16/5/23.
  */
-public class PlanElasticSearchUtil {
+public class PlanElasticSearchUtil extends BaseElasticSearchUtil {
 
     private static final Logger logger = LoggerFactory.getLogger(PlanElasticSearchUtil.class);
 
-    public TransportClient client;
-
     public PlanElasticSearchUtil(String nodesStr) {
-        if (nodesStr != null) {
-            init(nodesStr);
-        } else {
-            init("localhost:9300");
-        }
-    }
-
-    private void init(String nodesStr) {
-        String[] split = nodesStr.split(";");
-        try {
-
-            client = TransportClient.builder().build();
-            for (String s : split) {
-                String[] node = s.split(":");
-                client.addTransportAddress(new InetSocketTransportAddress(InetAddress.getByName(node[0]), Integer.valueOf(node[1])));
-            }
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    public SearchHits searchByKeyword(String index, String[] fields, String keyword, int from, int size) {
-        SearchRequestBuilder request = client.prepareSearch(index)
-                .setSearchType(SearchType.DFS_QUERY_THEN_FETCH);
-        if (StringUtils.isNotEmpty(keyword)) {
-            request.setQuery(QueryBuilders.multiMatchQuery(keyword, fields)
-                    .type(MatchQueryBuilder.Type.PHRASE));//完全匹配
-        }
-        request.addSort("createDate", SortOrder.DESC)
-                .setFrom(from).setSize(size).setExplain(true);
-
-        SearchResponse response = request.execute().actionGet();
-        return response.getHits();
+        super(nodesStr);
     }
 
     public SearchHits searchByURL(String url) {
